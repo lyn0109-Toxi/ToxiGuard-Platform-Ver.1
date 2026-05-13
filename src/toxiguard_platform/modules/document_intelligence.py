@@ -27,7 +27,7 @@ from toxiguard_platform.modules.specification_structure import (
 )
 
 
-_VENDOR_PATH = Path(__file__).resolve().parents[1] / "vendor_py314"
+_VENDOR_PATH = Path(__file__).resolve().parents[3] / "vendor_py314"
 if _VENDOR_PATH.exists() and str(_VENDOR_PATH) not in sys.path:
     sys.path.insert(0, str(_VENDOR_PATH))
 
