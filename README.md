@@ -26,9 +26,11 @@ Use these settings when deploying from GitHub:
 - Repository: `lyn0109-Toxi/ToxiGuard-Platform-Ver.1`
 - Branch: `main`
 - Main file path: `streamlit_app.py`
-- Python runtime: configured by `runtime.txt`
+- Python version: select `3.12` or `3.11` in Streamlit Cloud Advanced settings
 - System packages for OCR: configured by `packages.txt`
 - Python packages: configured by `requirements.txt`
+
+Streamlit Cloud does not change the Python runtime of an existing app in place. If an app was created with Python 3.14, delete only the Streamlit app deployment and redeploy it with Python 3.12 or 3.11. Do not delete the GitHub repository.
 
 RDKit is intentionally not installed by default in the Cloud runtime because it can make deployment slow or unstable. The app still runs with the built-in fallback structural alert engine. A validated chemistry deployment can add RDKit later after the Streamlit runtime is stable.
 
@@ -40,7 +42,7 @@ RDKit is intentionally not installed by default in the Cloud runtime because it 
 - `src/toxiguard_platform/modules/`: CTD extraction, product context, regulatory sources, ToxiGuard tools, reporting, worksheet logic
 - `assets/`: 로고, 이미지, 리포트용 정적 파일
 - `data/`: 샘플 데이터 또는 참조 자료
-- `runtime.txt`: Streamlit Cloud Python version
+- `runtime.txt`: local deployment hint; select Python version in Streamlit Cloud Advanced settings
 - `packages.txt`: Streamlit Cloud OCR system packages
 - `requirements.txt`: Streamlit Cloud Python dependencies
 - `tests/`: 향후 Streamlit/모듈 테스트
