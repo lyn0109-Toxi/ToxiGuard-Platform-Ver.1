@@ -19,15 +19,16 @@ LABELS = {
         "disclaimer": "본 보고서는 의사결정 보조용 prototype 산출물이며, 공식 규제기관 판정 또는 검증된 시스템 산출물이 아닙니다. 최종 판단은 원문 CTD와 분야별 전문가 검토로 확인해야 합니다.",
         "application_snapshot": "1. 신청 및 문서 개요",
         "executive_summary": "2. 종합 요약",
-        "product_context": "3. 제품 및 제형 정보",
-        "ctd_evidence": "4. CTD 근거 맵",
-        "spec_method": "5. 기준 및 시험방법 검토",
-        "performance": "6. 용출 / 생동성 근거",
-        "stability": "7. 안정성 검토",
-        "impurity": "8. 물질 / 불순물 / ICH M7 검토",
-        "sources": "9. 규제 기준 출처 연결",
-        "deficiencies": "10. 보완사항 추적",
-        "integrated": "11. 종합 평가",
+        "development_story": "3. 개발 서사 및 관리전략",
+        "product_context": "4. 제품 및 제형 정보",
+        "ctd_evidence": "5. CTD 근거 맵",
+        "spec_method": "6. 기준 및 시험방법 검토",
+        "performance": "7. 용출 / 생동성 근거",
+        "stability": "8. 안정성 검토",
+        "impurity": "9. 물질 / 불순물 / ICH M7 검토",
+        "sources": "10. 규제 기준 출처 연결",
+        "deficiencies": "11. 보완사항 추적",
+        "integrated": "12. 종합 평가",
         "appendix": "부록. 상세 추출 근거",
         "product": "제품명",
         "active": "주성분",
@@ -66,15 +67,16 @@ LABELS = {
         "disclaimer": "This report is a prototype decision-support output. It is not an official regulatory determination or a validated system output. Final conclusions require verification against the source CTD and discipline reviewer judgment.",
         "application_snapshot": "1. Application and Document Overview",
         "executive_summary": "2. Executive Summary",
-        "product_context": "3. Product and Formulation Context",
-        "ctd_evidence": "4. CTD Evidence Map",
-        "spec_method": "5. Specification and Test Method Review",
-        "performance": "6. Dissolution / Bioequivalence Evidence",
-        "stability": "7. Stability Review",
-        "impurity": "8. Compound / Impurity / ICH M7 Review",
-        "sources": "9. Regulatory Source Crosswalk",
-        "deficiencies": "10. Deficiency Tracker",
-        "integrated": "11. Integrated Assessment",
+        "development_story": "3. Development Story and Control Strategy",
+        "product_context": "4. Product and Formulation Context",
+        "ctd_evidence": "5. CTD Evidence Map",
+        "spec_method": "6. Specification and Test Method Review",
+        "performance": "7. Dissolution / Bioequivalence Evidence",
+        "stability": "8. Stability Review",
+        "impurity": "9. Compound / Impurity / ICH M7 Review",
+        "sources": "10. Regulatory Source Crosswalk",
+        "deficiencies": "11. Deficiency Tracker",
+        "integrated": "12. Integrated Assessment",
         "appendix": "Appendix. Detailed Extracted Evidence",
         "product": "Product",
         "active": "Active Substance",
@@ -262,6 +264,7 @@ def create_pdf_report(payload: dict, language: str = "en") -> bytes:
         )
     )
 
+    story.extend(_development_story_section(payload, context, worksheet, styles, label, Table, TableStyle, colors))
     story.extend(_product_context_section(context, styles, label, Table, TableStyle, colors))
     story.extend(_document_extraction_section(payload, styles, label, Table, TableStyle, colors))
     story.extend(_ctd_evidence_section(worksheet, styles, label, Table, TableStyle, colors))
@@ -485,7 +488,7 @@ def _product_context_section(context, styles, label, Table, TableStyle, colors) 
 def _document_extraction_section(payload, styles, label, Table, TableStyle, colors) -> list:
     from reportlab.platypus import Spacer
 
-    story = _section("3A. Document Extraction Quality" if not _is_ko(label) else "3A. 문서 추출 품질", styles, label)
+    story = _section("4A. Document Extraction Quality" if not _is_ko(label) else "4A. 문서 추출 품질", styles, label)
     profile = payload.get("document_profile") or {}
     project_documents = payload.get("project_documents") or []
     project_summaries = payload.get("project_document_summaries") or []
@@ -623,7 +626,26 @@ def _ctd_evidence_section(worksheet, styles, label, Table, TableStyle, colors) -
 
 def _executive_narrative(payload, worksheet, label, language: str) -> str:
     if language != "ko":
-        return payload.get("document_narrative") or label["not_detected"]
+        narrative = payload.get("document_narrative")
+        if narrative:
+            return narrative
+        context = payload.get("product_context") or {}
+        product = context.get("product_name") or "the product"
+        active = context.get("active_substance") or "the active substance"
+        counts = _signal_counts(payload)
+        detected = [name for name, count in counts.items() if count]
+        integrated = _worksheet_item(worksheet, "Integrated Assessment")
+        recommendation = _localize(integrated.get("Recommended Action") or "Needs review", language)
+        if detected:
+            evidence_phrase = ", ".join(detected)
+        else:
+            evidence_phrase = "limited extractable CTD evidence"
+        return (
+            f"This review frames {product} ({active}) as a CTD evidence package rather than a list of isolated excerpts. "
+            f"The extracted evidence currently supports review of {evidence_phrase}. "
+            f"The preliminary recommendation is '{recommendation}', subject to source-document verification and discipline reviewer judgment. "
+            "The report is organized in the same technical sequence used in development dossiers: product identity, formulation and process rationale, control strategy, performance evidence, stability, impurity risk, and reviewer actions."
+        )
 
     counts = {
         "기준": len(payload.get("specifications") or []),
@@ -668,10 +690,142 @@ def _specification_section(payload, worksheet, styles, label, Table, TableStyle,
     return story
 
 
+def _development_story_section(payload, context, worksheet, styles, label, Table, TableStyle, colors) -> list:
+    story = _section(label["development_story"], styles, label)
+    ko = _is_ko(label)
+    language = "ko" if ko else "en"
+    story.append(_para(_development_story_narrative(payload, context, worksheet, language), styles["Body"]))
+    story.append(_subheading("개발 문서 흐름" if ko else "Dossier Storyline", styles))
+    story.append(
+        _rows_table(
+            _dossier_storyline_rows(payload, context, label),
+            ["구간" if ko else "Stage", "문서가 말하는 내용" if ko else "What the dossier should explain", "ToxiGuard 검토 초점" if ko else "ToxiGuard review focus"],
+            styles,
+            Table,
+            TableStyle,
+            colors,
+            [1.1, 2.8, 2.1],
+        )
+    )
+    story.append(_subheading("관리전략 요약" if ko else "Control Strategy Snapshot", styles))
+    story.append(
+        _rows_table(
+            _control_strategy_rows(payload, context, worksheet, label),
+            ["검토 축" if ko else "Review Axis", "현재 근거" if ko else "Current Evidence", "확인할 질문" if ko else "Reviewer Question"],
+            styles,
+            Table,
+            TableStyle,
+            colors,
+            [1.25, 2.35, 2.4],
+        )
+    )
+    return story
+
+
 def _signal_section(title: str, items, styles, label, key: str) -> list:
     story = _section(title, styles, label)
     story.append(_bullet_list(items, styles, label, limit=10))
     return story
+
+
+def _development_story_narrative(payload, context, worksheet, language: str) -> str:
+    product = context.get("product_name") or "TBD"
+    active = context.get("active_substance") or "TBD"
+    dosage = context.get("dosage_form") or "TBD"
+    route = context.get("route") or "TBD"
+    counts = _signal_counts(payload)
+    integrated = _worksheet_item(worksheet, "Integrated Assessment")
+    recommendation = _localize(integrated.get("Recommended Action") or ("검토 필요" if language == "ko" else "Needs review"), language)
+    if language == "ko":
+        return (
+            f"본 검토는 {product}의 개발 자료를 제품 정체성, 제형/제조 근거, 기준 및 시험방법, 성능 근거, 안정성, 불순물 위험 순서로 재구성했습니다. "
+            f"현재 추출된 신호는 기준 {counts['specifications']}건, 시험방법 {counts['test_methods']}건, 생동성/용출 {counts['bioequivalence']}건, "
+            f"안정성 {counts['stability']}건, 물질/불순물 {counts['compounds']}건입니다. "
+            f"주성분은 {active}, 제형/투여경로는 {dosage}/{route}로 추출되었으며, 권고 조치는 '{recommendation}'입니다. "
+            "아래 표는 원문 개발자료의 이야기 흐름을 심사자가 확인해야 할 관리전략 질문으로 바꾼 것입니다."
+        )
+    return (
+        f"This report reorganizes the {product} dossier around a development narrative: product identity, formulation and process rationale, "
+        f"specification and analytical controls, performance evidence, stability support, and impurity risk. "
+        f"The current extraction identified {counts['specifications']} specification signal(s), {counts['test_methods']} test-method signal(s), "
+        f"{counts['bioequivalence']} dissolution/bioequivalence signal(s), {counts['stability']} stability signal(s), and {counts['compounds']} compound/impurity signal(s). "
+        f"The extracted active substance is {active}, with dosage form/route recorded as {dosage}/{route}. "
+        f"The preliminary action is '{recommendation}'."
+    )
+
+
+def _dossier_storyline_rows(payload, context, label) -> list[dict]:
+    ko = _is_ko(label)
+    rows = []
+    def row(stage, story, focus):
+        if ko:
+            rows.append({"구간": stage, "문서가 말하는 내용": story, "ToxiGuard 검토 초점": focus})
+        else:
+            rows.append({"Stage": stage, "What the dossier should explain": story, "ToxiGuard review focus": focus})
+
+    product = context.get("product_name") or "TBD"
+    active = context.get("active_substance") or "TBD"
+    formulation_count = len(context.get("formulation") or [])
+    if ko:
+        row("제품 정체성", f"{product} / {active}의 제품명, 주성분, 함량, 제형, 투여경로를 먼저 고정합니다.", "제품 기본정보가 CTD 본문, 표지, 기준 및 시험방법 표와 일치하는지 확인")
+        row("제형/제조 근거", f"제형 및 첨가제 근거 {formulation_count}건을 개발 배경과 연결합니다.", "조성, 기능, 제조공정, scale-up 또는 보관 조건의 연결성 확인")
+        row("기준 및 시험방법", "시험항목별 기준, 시험방법, 표준액/검액 농도, 계산식을 한 표로 묶습니다.", "Specification과 method가 서로 대응되는지 확인")
+        row("성능/안정성", "용출/동등성, 안정성, 포장/보관 근거를 제품 성능 유지 논리로 연결합니다.", "f2, bootstrap, shelf-life, container closure 근거 확인")
+        row("위험/보완사항", "불순물, 유전독성, 출처 기준, 잔여 불확실성을 보완 요청 언어로 전환합니다.", "USP/EP/ICH/MFDS 근거와 reviewer action 확인")
+    else:
+        row("Product Identity", f"Fix the identity of {product} / {active}: product name, strength, dosage form, and route.", "Confirm consistency across cover page, CTD body, and specification tables.")
+        row("Formulation / Process Rationale", f"Link {formulation_count} formulation or excipient item(s) to development rationale.", "Check composition, function, manufacturing rationale, scale-up, and storage linkage.")
+        row("Specification / Method", "Keep each test item paired with acceptance criteria, procedure, standard/sample concentration, and calculation logic.", "Confirm that every specification has a matching analytical method and source anchor.")
+        row("Performance / Stability", "Connect dissolution, equivalence, stability, packaging, and storage evidence to product performance.", "Review f2/bootstrap, shelf-life, and container-closure support.")
+        row("Risk / Deficiency", "Translate impurity, genotoxicity, regulatory-source, and uncertainty findings into reviewer actions.", "Confirm USP/EP/ICH/MFDS basis and information-request wording.")
+    return rows
+
+
+def _control_strategy_rows(payload, context, worksheet, label) -> list[dict]:
+    ko = _is_ko(label)
+    details = payload.get("signal_details") or {}
+    integrated = _worksheet_item(worksheet, "Integrated Assessment")
+    def count(key):
+        direct = payload.get(key) or []
+        detailed = details.get(key) if isinstance(details, dict) else []
+        return max(len(direct), len(detailed or []))
+    def evidence(key, fallback):
+        value = count(key)
+        if ko:
+            return f"{value}건 감지" if value else fallback
+        return f"{value} signal(s) detected" if value else fallback
+    rows = []
+    def row(axis, current, question):
+        if ko:
+            rows.append({"검토 축": axis, "현재 근거": current, "확인할 질문": question})
+        else:
+            rows.append({"Review Axis": axis, "Current Evidence": current, "Reviewer Question": question})
+
+    if ko:
+        row("제품/제형", f"제품정보 {len(context.get('basic_info') or [])}건, formulation {len(context.get('formulation') or [])}건", "주성분, 함량, 제형, 첨가제 기능이 제출자료 전체에서 일관적인가?")
+        row("기준 및 시험방법", evidence("specifications", "명확한 기준 근거 부족") + " / " + evidence("test_methods", "시험방법 근거 부족"), "각 시험항목에 기준, 방법, 시스템적합성, 표준액/검액 농도가 대응되는가?")
+        row("성능/동등성", evidence("bioequivalence", "용출/동등성 근거 부족"), "대조약 대비 용출률, f2, bootstrap 또는 동등성 판단 근거가 충분한가?")
+        row("안정성", evidence("stability", "안정성 근거 부족"), "가속/장기/포장 조건이 shelf-life와 직접 연결되는가?")
+        row("불순물/유전독성", evidence("compounds", "물질/불순물 근거 부족"), "관련물질, degradation, ICH M7/QSAR 근거와 관리한도가 설명되는가?")
+        row("종합 판단", _localize(integrated.get("Recommended Action") or "검토 필요", "ko"), "잔여 불확실성이 보완 요청 또는 reviewer language로 정리되었는가?")
+    else:
+        row("Product / Formulation", f"{len(context.get('basic_info') or [])} identity item(s); {len(context.get('formulation') or [])} formulation item(s)", "Are active substance, strength, dosage form, and excipient functions consistent across the dossier?")
+        row("Specification / Method", evidence("specifications", "No clear specification evidence") + " / " + evidence("test_methods", "No clear method evidence"), "Does each test item have criteria, procedure, system suitability, and standard/sample concentration?")
+        row("Performance / Equivalence", evidence("bioequivalence", "No clear dissolution/equivalence evidence"), "Is reference-drug dissolution, f2, bootstrap, or equivalence rationale sufficient?")
+        row("Stability", evidence("stability", "No clear stability evidence"), "Do accelerated/long-term/package conditions directly support shelf life?")
+        row("Impurity / Genotoxicity", evidence("compounds", "No clear compound/impurity evidence"), "Are related substances, degradation, ICH M7/QSAR basis, and control limits explained?")
+        row("Integrated Decision", _localize(integrated.get("Recommended Action") or "Needs review", "en"), "Are residual uncertainties translated into reviewer language or information requests?")
+    return rows
+
+
+def _signal_counts(payload) -> dict[str, int]:
+    details = payload.get("signal_details") or {}
+    counts = {}
+    for key in ["specifications", "test_methods", "bioequivalence", "stability", "compounds"]:
+        direct = payload.get(key) or []
+        detailed = details.get(key) if isinstance(details, dict) else []
+        counts[key] = max(len(direct), len(detailed or []))
+    return counts
 
 
 def _impurity_section(payload, context, worksheet, styles, label, Table, TableStyle, colors) -> list:
@@ -989,7 +1143,14 @@ def _localize(value, language: str):
         text = value
         for source, target in COMMON_KO_TERMS.items():
             text = text.replace(source, target)
-        return text
+        return _dedupe_slash_duplicates(text)
+    return value
+
+
+def _dedupe_slash_duplicates(value: str) -> str:
+    parts = [part.strip() for part in re.split(r"\s*/\s*", value or "") if part.strip()]
+    if len(parts) == 2 and parts[0] == parts[1]:
+        return parts[0]
     return value
 
 

@@ -668,12 +668,27 @@ def check_reporting(v: Validator) -> None:
     english_pdf = create_pdf_report(multilingual_payload, language="en")
     english_text = _extract_pdf_text(english_pdf)
     v.require(
+        "Development Story and Control Strategy" in english_text and "Control Strategy Snapshot" in english_text,
+        "reporting:english_development_story_section",
+        english_text[:500],
+    )
+    v.require(
         not re.search(r"[가-힣]", english_text),
         "reporting:english_pdf_no_hangul",
         re.findall(r".{0,20}[가-힣].{0,20}", english_text)[:5].__repr__(),
     )
     korean_pdf = create_pdf_report(multilingual_payload, language="ko")
     korean_text = _extract_pdf_text(korean_pdf)
+    v.require(
+        "개발 서사 및 관리전략" in korean_text and "관리전략 요약" in korean_text,
+        "reporting:korean_development_story_section",
+        korean_text[:500],
+    )
+    v.require(
+        "전문가 확인 후 수용 가능 / 전문가 확인 후 수용 가능" not in korean_text,
+        "reporting:korean_no_duplicate_recommendation",
+        korean_text[:500],
+    )
     v.require(
         bool(re.search(r"[가-힣]", korean_text)),
         "reporting:korean_pdf_allows_hangul",
