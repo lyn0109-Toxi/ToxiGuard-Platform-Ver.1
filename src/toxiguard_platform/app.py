@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import re
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -66,6 +67,19 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+APP_ROOT = Path(__file__).resolve().parents[2]
+ASSET_DIR = APP_ROOT / "assets"
+
+
+def asset_data_uri(filename: str) -> str:
+    path = ASSET_DIR / filename
+    if not path.exists():
+        return ""
+    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
+
+
+OPENING_MAP_URI = asset_data_uri("ontology_map_preview_final.png")
 
 
 st.markdown(
@@ -199,6 +213,290 @@ header[data-testid="stHeader"],
   color: rgba(238, 244, 255, 0.72) !important;
   font-size: 0.78rem;
   line-height: 1.45;
+}
+
+.stApp:has(.tg-opening-screen) {
+  background: #0b1221;
+}
+
+.stApp:has(.tg-opening-screen) .block-container {
+  max-width: none;
+  padding: 0 !important;
+}
+
+.stApp:has(.tg-opening-screen) [data-testid="stSidebar"] {
+  display: none !important;
+}
+
+.tg-opening-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 22% 17%, rgba(21, 94, 117, 0.52), transparent 34%),
+    radial-gradient(circle at 74% 78%, rgba(183, 121, 31, 0.12), transparent 32%),
+    linear-gradient(135deg, #0b1221 0%, #101828 48%, #0b1221 100%);
+  color: #eef4ff;
+  padding: clamp(1rem, 1.6vw, 1.6rem);
+}
+
+.tg-opening-screen::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 35% 35%, black, transparent 74%);
+}
+
+.tg-opening-content {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tg-opening-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+  margin-top: 0.25rem;
+}
+
+.tg-opening-mark {
+  width: clamp(3.5rem, 5vw, 5.2rem);
+  height: clamp(3.5rem, 5vw, 5.2rem);
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1.5px solid rgba(94, 234, 212, 0.86);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.24), rgba(14, 165, 233, 0.12)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    rgba(2, 6, 23, 0.72);
+  background-size: auto, 1.35rem 1.35rem, 1.35rem 1.35rem, auto;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.16) inset,
+    0 18px 38px rgba(14, 165, 233, 0.26),
+    0 0 34px rgba(94, 234, 212, 0.22);
+}
+
+.tg-opening-mark::before,
+.tg-opening-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.tg-opening-mark::before {
+  width: 0.72rem;
+  height: 0.72rem;
+  left: 0.86rem;
+  top: 1.05rem;
+  background: #5eead4;
+  box-shadow: 0 0 22px rgba(94, 234, 212, 0.66);
+  animation: tgOpeningDotA 4.2s ease-in-out infinite alternate;
+}
+
+.tg-opening-mark::after {
+  width: 0.62rem;
+  height: 0.62rem;
+  right: 1rem;
+  bottom: 1.18rem;
+  background: #fbbf24;
+  box-shadow:
+    -1.75rem -0.65rem 0 #38bdf8,
+    0 0 24px rgba(251, 191, 36, 0.58);
+  animation: tgOpeningDotB 4.8s ease-in-out infinite alternate;
+}
+
+.tg-opening-title {
+  margin: 0;
+  font-size: clamp(3rem, 5.2vw, 5.45rem);
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 36%, #5eead4 76%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 18px 42px rgba(14, 165, 233, 0.42));
+}
+
+.tg-opening-tagline {
+  color: #dbeafe;
+  font-size: clamp(0.92rem, 1.35vw, 1.15rem);
+  max-width: 1480px;
+  line-height: 1.35;
+  margin-top: 0.55rem;
+  padding: 0.5rem 0.8rem;
+  border-left: 3px solid rgba(251, 191, 36, 0.78);
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.64), rgba(15, 23, 42, 0.1));
+}
+
+.tg-opening-map-stage {
+  position: relative;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  border: 1px solid rgba(94, 234, 212, 0.58);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(2, 6, 23, 0.9), rgba(8, 47, 73, 0.62)),
+    rgba(15, 23, 42, 0.62);
+  box-shadow:
+    0 30px 80px rgba(2, 6, 23, 0.46),
+    0 0 0 1px rgba(251, 191, 36, 0.12) inset,
+    0 0 54px rgba(94, 234, 212, 0.13);
+  padding: clamp(0.45rem, 0.8vw, 0.75rem);
+  height: min(65vh, 51vw);
+  min-height: 420px;
+}
+
+.tg-opening-map-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(94, 234, 212, 0.12), transparent 28%),
+    radial-gradient(circle at 84% 72%, rgba(251, 191, 36, 0.08), transparent 30%),
+    #f8fbfe;
+}
+
+.tg-opening-map-canvas img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center top;
+}
+
+.tg-opening-map-fallback {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  color: #155e75;
+  font-weight: 800;
+  background: #f8fbfe;
+}
+
+.tg-node-glow {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 14px;
+  opacity: 0;
+  background: rgba(94, 234, 212, 0.06);
+  box-shadow:
+    0 0 0 2px rgba(94, 234, 212, 0.34),
+    0 0 28px rgba(94, 234, 212, 0.46),
+    0 0 54px rgba(251, 191, 36, 0.16);
+  animation: tgGlowNode 8.4s ease-in-out infinite;
+}
+
+.tg-node-glow.why { left: 12.2%; top: 15.9%; width: 11.2%; height: 5.4%; animation-delay: 0s; }
+.tg-node-glow.product { left: 13.6%; top: 42.5%; width: 12.7%; height: 5.4%; animation-delay: 0.7s; }
+.tg-node-glow.safety { left: 34.2%; top: 37.4%; width: 11.8%; height: 5.3%; animation-delay: 1.2s; }
+.tg-node-glow.impurity { left: 63.2%; top: 37.4%; width: 12%; height: 5.3%; animation-delay: 1.2s; }
+.tg-node-glow.regulatory { left: 83.1%; top: 51.2%; width: 12.6%; height: 5.3%; animation-delay: 1.8s; }
+.tg-node-glow.cmc { left: 19.2%; top: 67.3%; width: 12.4%; height: 5.3%; animation-delay: 2.4s; }
+.tg-node-glow.be { left: 66.4%; top: 67.4%; width: 12%; height: 5.3%; animation-delay: 3s; }
+.tg-node-glow.output { left: 48.6%; top: 80.2%; width: 11.6%; height: 5.2%; animation-delay: 3.1s; }
+
+.tg-opening-note {
+  position: fixed;
+  left: 2rem;
+  bottom: 1.35rem;
+  z-index: 9010;
+  max-width: min(42rem, calc(50vw - 16rem));
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.72);
+  color: #94a3b8;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  backdrop-filter: blur(10px);
+}
+
+.stApp:has(.tg-opening-screen) [data-testid="stButton"] {
+  position: fixed;
+  left: 50%;
+  bottom: 1.28rem;
+  transform: translateX(-50%);
+  z-index: 9020;
+  width: min(28rem, calc(100vw - 2rem));
+}
+
+.stApp:has(.tg-opening-screen) [data-testid="stButton"] button {
+  width: 100%;
+  min-height: 3.2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(251, 191, 36, 0.72) !important;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.96), rgba(94, 234, 212, 0.78)) !important;
+  color: #0f172a !important;
+  font-size: 1.02rem;
+  font-weight: 900;
+  box-shadow:
+    0 18px 48px rgba(2, 6, 23, 0.42),
+    0 0 28px rgba(94, 234, 212, 0.24);
+}
+
+.stApp:has(.tg-opening-screen) [data-testid="stButton"] button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+@keyframes tgOpeningDotA {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(1.6rem, 1.1rem, 0); }
+}
+
+@keyframes tgOpeningDotB {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-1.45rem, -1rem, 0); }
+}
+
+@keyframes tgGlowNode {
+  0%, 24%, 100% { opacity: 0; transform: scale(0.99); }
+  36%, 58% { opacity: 1; transform: scale(1.012); }
+  72% { opacity: 0; transform: scale(1); }
+}
+
+@media (max-width: 900px) {
+  .tg-opening-screen {
+    padding: 1rem;
+  }
+
+  .tg-opening-content {
+    min-height: calc(100vh - 2rem);
+  }
+
+  .tg-opening-brand {
+    gap: 0.85rem;
+  }
+
+  .tg-opening-map-stage {
+    height: 50vh;
+    min-height: 280px;
+  }
+
+  .tg-opening-note {
+    left: 1rem;
+    right: 1rem;
+    bottom: 5.1rem;
+    max-width: none;
+    border-radius: 14px;
+  }
 }
 
 #MainMenu,
@@ -493,6 +791,7 @@ TRANSLATIONS = {
     "prototype_status": {"ko": "프로토타입 상태", "en": "Prototype status"},
     "decision_support_only": {"ko": "의사결정 보조용", "en": "Decision-support only"},
     "expert_review_required": {"ko": "전문가 검토 필요", "en": "Expert review required"},
+    "opening_screen": {"ko": "오프닝 화면", "en": "Opening screen"},
     "developer_info": {"ko": "개발자 정보", "en": "Developer information"},
     "developer_name": {"ko": "개발자", "en": "Developer"},
     "developer_role": {"ko": "역할", "en": "Role"},
@@ -807,6 +1106,8 @@ if "workflow_selector" not in st.session_state:
     st.session_state.workflow_selector = "Document Analyzer"
 if "sidebar_comment" not in st.session_state:
     st.session_state.sidebar_comment = ""
+if "entered_platform" not in st.session_state:
+    st.session_state.entered_platform = False
 
 
 WORKFLOW_OPTIONS = [
@@ -978,6 +1279,51 @@ def rerun_app() -> None:
         st.experimental_rerun()
 
 
+def render_opening_screen() -> None:
+    map_markup = (
+        f"<img src='{OPENING_MAP_URI}' alt='ToxiGuard-Platform ontology map' />"
+        if OPENING_MAP_URI
+        else "<div class='tg-opening-map-fallback'>ToxiGuard-Platform Ontology Map</div>"
+    )
+    st.markdown(
+        f"""
+<div class="tg-opening-screen">
+  <div class="tg-opening-content">
+    <div class="tg-opening-brand">
+      <div class="tg-opening-mark" aria-hidden="true"></div>
+      <h1 class="tg-opening-title">ToxiGuard-Platform</h1>
+    </div>
+    <div class="tg-opening-tagline">
+      Built to turn fragmented toxicology, CMC, impurity, RLD, dissolution,
+      and regulatory evidence into one development strategy plan.
+    </div>
+    <div class="tg-opening-map-stage">
+      <div class="tg-opening-map-canvas" tabindex="0">
+        {map_markup}
+        <span class="tg-node-glow why"></span>
+        <span class="tg-node-glow product"></span>
+        <span class="tg-node-glow safety"></span>
+        <span class="tg-node-glow impurity"></span>
+        <span class="tg-node-glow regulatory"></span>
+        <span class="tg-node-glow cmc"></span>
+        <span class="tg-node-glow be"></span>
+        <span class="tg-node-glow output"></span>
+      </div>
+    </div>
+    <div class="tg-opening-note">
+      Decision support only. Final regulatory use requires expert review,
+      official source verification, and product-specific evidence.
+    </div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+    if st.button("Enter ToxiGuard-Platform", key="enter_platform", type="primary", use_container_width=True):
+        st.session_state.entered_platform = True
+        rerun_app()
+
+
 def render_sidebar_menu() -> str:
     selected = st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
     st.caption(t("view"))
@@ -998,6 +1344,9 @@ def render_sidebar_menu() -> str:
 
 
 def render_sidebar_footer() -> None:
+    if st.button(t("opening_screen"), key="sidebar_opening_screen", use_container_width=True):
+        st.session_state.entered_platform = False
+        rerun_app()
     st.markdown(
         f"""
 <div class="sidebar-dev-card">
@@ -1425,6 +1774,11 @@ def render_application_snapshot() -> dict:
         st.session_state.application_profile = updated
         st.success(t("snapshot_updated"))
     return updated
+
+
+if not st.session_state.get("entered_platform", False):
+    render_opening_screen()
+    st.stop()
 
 
 render_topbar()

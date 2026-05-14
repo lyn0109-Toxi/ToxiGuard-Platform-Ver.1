@@ -787,6 +787,15 @@ def check_streamlit_language_switch(v: Validator) -> None:
     if app.exception:
         v.fail("streamlit_language_switch:initial_render", "; ".join(str(item.value) for item in app.exception))
         return
+    opening_buttons = [item.label for item in app.button]
+    v.require("Enter ToxiGuard-Platform" in opening_buttons, "streamlit_opening:enter_button", str(opening_buttons[:4]))
+    if "Enter ToxiGuard-Platform" not in opening_buttons:
+        return
+    app.button[opening_buttons.index("Enter ToxiGuard-Platform")].click()
+    app.run(timeout=30)
+    if app.exception:
+        v.fail("streamlit_language_switch:post_opening_render", "; ".join(str(item.value) for item in app.exception))
+        return
     if not app.selectbox:
         v.fail("streamlit_language_switch:selector", "Language selector was not rendered.")
         return
@@ -813,6 +822,13 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
     if app.exception:
         v.fail("streamlit_document_flow:initial_render", "; ".join(str(item.value) for item in app.exception))
         return
+    opening_buttons = [item.label for item in app.button]
+    if "Enter ToxiGuard-Platform" in opening_buttons:
+        app.button[opening_buttons.index("Enter ToxiGuard-Platform")].click()
+        app.run(timeout=120)
+        if app.exception:
+            v.fail("streamlit_document_flow:post_opening_render", "; ".join(str(item.value) for item in app.exception))
+            return
     button_labels = [item.label for item in app.button]
     text_area_labels = [item.label for item in app.text_area]
     v.require("프로젝트 분석" in button_labels, "streamlit_document_flow:analyze_button", str(button_labels))
