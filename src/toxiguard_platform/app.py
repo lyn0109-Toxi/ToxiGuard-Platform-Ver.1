@@ -95,13 +95,31 @@ st.markdown(
 
 .block-container {
   max-width: 1320px;
-  padding-top: 1.25rem;
+  padding-top: 0.65rem !important;
   padding-bottom: 3rem;
+}
+
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"] {
+  padding-top: 0 !important;
+}
+
+header[data-testid="stHeader"],
+[data-testid="stHeader"] {
+  display: none !important;
+  height: 0 !important;
+  visibility: hidden !important;
 }
 
 [data-testid="stSidebar"] {
   background: var(--sidebar);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-testid="stSidebarContent"],
+[data-testid="stSidebarUserContent"],
+[data-testid="stSidebar"] > div:first-child {
+  padding-top: 1rem !important;
 }
 
 [data-testid="stSidebar"] * {
@@ -203,8 +221,12 @@ footer,
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.2rem 1.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.95rem;
   box-shadow: 0 12px 28px rgba(16, 24, 40, 0.05);
+}
+
+.topbar-language-spacer {
+  height: 0.2rem;
 }
 
 .tg-brand-row {
@@ -996,16 +1018,15 @@ def render_sidebar_footer() -> None:
 
 
 def render_language_selector() -> None:
-    _, right = st.columns([0.78, 0.22])
-    with right:
-        selected_language = st.selectbox(
-            t("language"),
-            LANGUAGE_OPTIONS,
-            index=LANGUAGE_OPTIONS.index(current_language()),
-            format_func=lambda value: LANGUAGE_LABELS[value],
-            key="language_selector",
-        )
-        st.session_state.ui_language = selected_language
+    selected_language = st.selectbox(
+        t("language"),
+        LANGUAGE_OPTIONS,
+        index=LANGUAGE_OPTIONS.index(current_language()),
+        format_func=lambda value: LANGUAGE_LABELS[value],
+        key="language_selector",
+        label_visibility="collapsed",
+    )
+    st.session_state.ui_language = selected_language
 
 
 def render_header() -> None:
@@ -1029,6 +1050,15 @@ def render_header() -> None:
 """,
         unsafe_allow_html=True,
     )
+
+
+def render_topbar() -> None:
+    left, right = st.columns([0.78, 0.22], gap="large")
+    with left:
+        render_header()
+    with right:
+        st.markdown('<div class="topbar-language-spacer"></div>', unsafe_allow_html=True)
+        render_language_selector()
 
 
 def render_status_strip() -> None:
@@ -1397,8 +1427,7 @@ def render_application_snapshot() -> dict:
     return updated
 
 
-render_language_selector()
-render_header()
+render_topbar()
 render_status_strip()
 
 with st.sidebar:
