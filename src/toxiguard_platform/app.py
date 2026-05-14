@@ -77,34 +77,50 @@ st.markdown(
   --line: #d8dee8;
   --surface: #ffffff;
   --soft: #f6f8fb;
+  --surface-raised: #fbfcfe;
   --blue: #155e75;
+  --blue-soft: #e8f3f7;
   --gold: #b7791f;
   --green: #147a5c;
   --red: #b42318;
   --amber: #a15c07;
+  --accent: #e6504f;
+  --sidebar: #101828;
 }
 
 .stApp {
-  background: #f7f9fc;
+  background: #f5f7fb;
   color: var(--ink);
 }
 
 .block-container {
-  max-width: 1280px;
-  padding-top: 1.6rem;
+  max-width: 1320px;
+  padding-top: 1.25rem;
+  padding-bottom: 3rem;
 }
 
 [data-testid="stSidebar"] {
-  background: #101828;
+  background: var(--sidebar);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 [data-testid="stSidebar"] * {
   color: #eef4ff !important;
 }
 
+[data-testid="stSidebar"] h3 {
+  font-size: 1.1rem;
+  letter-spacing: 0;
+  margin-bottom: 0.25rem;
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+  line-height: 1.45;
+}
+
 [data-testid="stSidebar"] [data-testid="stButton"] button {
   width: 100%;
-  min-height: 2.6rem;
+  min-height: 2.85rem;
   justify-content: flex-start;
   border-radius: 10px;
   border: 1px solid rgba(238, 244, 255, 0.16);
@@ -122,9 +138,10 @@ st.markdown(
 
 [data-testid="stSidebar"] [data-testid="stButton"] button[kind="primary"],
 [data-testid="stSidebar"] [data-testid="baseButton-primary"] {
-  border-color: rgba(255, 91, 91, 0.85) !important;
-  background: #ff4b4b !important;
+  border-color: rgba(230, 80, 79, 0.95) !important;
+  background: linear-gradient(135deg, #e6504f, #c43b39) !important;
   color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(230, 80, 79, 0.22);
 }
 
 [data-testid="stSidebar"] [data-baseweb="textarea"],
@@ -168,7 +185,13 @@ st.markdown(
 
 #MainMenu,
 footer,
+[data-testid="stToolbar"],
+[data-testid="stHeaderActionElements"],
+[data-testid="stStatusWidget"],
+[data-testid="stDecoration"],
+[data-testid="stMainMenu"],
 [data-testid="stDeployButton"],
+[data-testid="stAppDeployButton"],
 [aria-label="Deploy"],
 [title="Deploy"] {
   display: none !important;
@@ -176,36 +199,91 @@ footer,
 }
 
 .tg-header {
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 1rem;
-  margin-bottom: 1.2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.2rem 1.35rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.05);
+}
+
+.tg-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.tg-mark {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 10px;
+  background: #101828;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .tg-title {
-  font-size: 2.2rem;
+  font-size: 1.55rem;
   font-weight: 760;
   letter-spacing: 0;
   margin: 0;
+  line-height: 1.2;
 }
 
 .tg-subtitle {
   color: var(--muted);
-  font-size: 1rem;
-  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  margin-top: 0.25rem;
+  line-height: 1.45;
+}
+
+.tg-meta {
+  margin-top: 0.9rem;
+  color: #475467;
+  font-size: 0.82rem;
+  font-weight: 650;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tg-meta span {
+  background: #eef4ff;
+  border: 1px solid #dbe7ff;
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
 }
 
 .status-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0 1.35rem;
+  gap: 0.85rem;
+  margin: 0.9rem 0 1.5rem;
 }
 
 .status-cell {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  padding: 0.95rem 1rem;
+  min-height: 5.25rem;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--blue);
 }
 
 .status-label {
@@ -219,6 +297,7 @@ footer,
   font-size: 1.05rem;
   font-weight: 720;
   margin-top: 0.25rem;
+  line-height: 1.35;
 }
 
 .section-band {
@@ -230,12 +309,13 @@ footer,
 }
 
 .review-banner {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
   border: 1px solid var(--line);
   border-left: 5px solid var(--blue);
-  border-radius: 8px;
-  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
   margin: 0.5rem 0 1rem;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.035);
 }
 
 .review-banner strong {
@@ -246,6 +326,115 @@ footer,
 
 .review-banner span {
   color: var(--muted);
+  line-height: 1.58;
+}
+
+h1, h2, h3, h4 {
+  color: var(--ink);
+  letter-spacing: 0;
+}
+
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li {
+  line-height: 1.62;
+}
+
+[data-testid="stWidgetLabel"] p {
+  color: #344054;
+  font-weight: 660;
+  font-size: 0.92rem;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] [data-baseweb="select"] {
+  border-radius: 10px !important;
+}
+
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea {
+  background: #ffffff !important;
+  border: 1px solid #d9e1ec !important;
+  color: var(--ink) !important;
+}
+
+[data-testid="stTextInput"] input:focus,
+[data-testid="stTextArea"] textarea:focus {
+  border-color: #155e75 !important;
+  box-shadow: 0 0 0 3px rgba(21, 94, 117, 0.12) !important;
+}
+
+[data-testid="stFileUploaderDropzone"] {
+  background: #ffffff !important;
+  border: 1px dashed #b8c3d4 !important;
+  border-radius: 12px !important;
+}
+
+[data-testid="stFileUploaderDropzone"]:hover {
+  border-color: var(--blue) !important;
+  background: #f8fbfd !important;
+}
+
+[data-testid="stMetric"] {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem 0.95rem;
+  min-height: 5.2rem;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.035);
+}
+
+[data-testid="stMetricLabel"] p {
+  color: var(--muted) !important;
+  font-weight: 650;
+}
+
+[data-testid="stMetricValue"] {
+  color: var(--ink);
+}
+
+[data-testid="stDataFrame"] {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.025);
+}
+
+[data-testid="stAlert"] {
+  border-radius: 10px;
+  border: 1px solid rgba(21, 94, 117, 0.14);
+}
+
+.stButton button {
+  border-radius: 9px !important;
+  min-height: 2.45rem;
+  font-weight: 700 !important;
+}
+
+.stButton button[kind="primary"] {
+  background: #e6504f !important;
+  border-color: #e6504f !important;
+}
+
+.stButton button[kind="secondary"] {
+  border-color: #cfd8e6 !important;
+}
+
+button[data-baseweb="tab"] {
+  border-radius: 9px 9px 0 0 !important;
+  padding: 0.55rem 0.9rem !important;
+  font-weight: 700 !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+  background: #ffffff !important;
+  color: var(--blue) !important;
+  border-bottom: 3px solid var(--blue) !important;
+}
+
+hr {
+  border-color: var(--line) !important;
 }
 
 @media (max-width: 820px) {
@@ -823,8 +1012,19 @@ def render_header() -> None:
     st.markdown(
         f"""
 <div class="tg-header">
-  <p class="tg-title">ToxiGuard-Platform Ver.1</p>
-  <div class="tg-subtitle">{t("subtitle")}</div>
+  <div class="tg-brand-row">
+    <div class="tg-mark">TG</div>
+    <div>
+      <p class="tg-title">ToxiGuard-Platform Ver.1</p>
+      <div class="tg-subtitle">{t("subtitle")}</div>
+    </div>
+  </div>
+  <div class="tg-meta">
+    <span>CTD Intelligence</span>
+    <span>Quality Review</span>
+    <span>ICH M7 / QSAR</span>
+    <span>FDA-style Worksheet</span>
+  </div>
 </div>
 """,
         unsafe_allow_html=True,
