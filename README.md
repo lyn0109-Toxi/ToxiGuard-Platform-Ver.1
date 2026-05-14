@@ -29,6 +29,7 @@ Use these settings when deploying from GitHub:
 - Python version: select `3.12` or `3.11` in Streamlit Cloud Advanced settings
 - System packages for OCR: configured by `packages.txt`
 - Python packages: configured by `requirements.txt`
+- Streamlit runtime: pinned to `streamlit==1.39.0` for Cloud frontend stability
 
 Streamlit Cloud does not change the Python runtime of an existing app in place. If an app was created with Python 3.14, delete only the Streamlit app deployment and redeploy it with Python 3.12 or 3.11. Do not delete the GitHub repository.
 
