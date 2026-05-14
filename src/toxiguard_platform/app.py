@@ -347,6 +347,38 @@ header[data-testid="stHeader"],
   filter: drop-shadow(0 18px 42px rgba(14, 165, 233, 0.42));
 }
 
+.tg-opening-language {
+  position: fixed;
+  top: clamp(0.9rem, 1.35vw, 1.4rem);
+  right: clamp(0.9rem, 1.35vw, 1.4rem);
+  z-index: 9025;
+  display: flex;
+  gap: 0.32rem;
+  padding: 0.24rem;
+  border: 1px solid rgba(94, 234, 212, 0.26);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.62);
+  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.tg-opening-lang-option {
+  min-width: 4.4rem;
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-align: center;
+  text-decoration: none !important;
+}
+
+.tg-opening-lang-option.active {
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.96), rgba(94, 234, 212, 0.82));
+  box-shadow: 0 0 18px rgba(94, 234, 212, 0.24);
+}
+
 .tg-opening-tagline {
   color: #dbeafe;
   font-size: clamp(0.88rem, 1.12vw, 1.04rem);
@@ -404,6 +436,18 @@ header[data-testid="stHeader"],
   padding: clamp(0.42rem, 0.68vw, 0.68rem);
   height: clamp(330px, 44vh, 620px);
   min-height: 0;
+  transition:
+    border-color 2.8s ease,
+    box-shadow 2.8s ease;
+}
+
+.tg-opening-map-stage:hover,
+.tg-opening-map-stage:focus-within {
+  border-color: rgba(94, 234, 212, 0.86);
+  box-shadow:
+    0 34px 90px rgba(2, 6, 23, 0.54),
+    0 0 0 1px rgba(251, 191, 36, 0.14) inset,
+    0 0 68px rgba(94, 234, 212, 0.2);
 }
 
 .tg-opening-map-canvas {
@@ -424,6 +468,19 @@ header[data-testid="stHeader"],
   display: block;
   object-fit: contain;
   object-position: center top;
+  transform: scale(1);
+  transform-origin: center center;
+  transition:
+    transform 2.8s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 2.8s ease;
+  will-change: transform;
+}
+
+.tg-opening-map-stage:hover .tg-opening-map-canvas img,
+.tg-opening-map-canvas:hover img,
+.tg-opening-map-canvas:focus-visible img {
+  transform: scale(1.38);
+  filter: saturate(1.05) contrast(1.02);
 }
 
 .tg-opening-map-fallback {
@@ -537,6 +594,12 @@ header[data-testid="stHeader"],
 
   .tg-opening-brand {
     gap: 0.85rem;
+  }
+
+  .tg-opening-language {
+    position: static;
+    align-self: flex-start;
+    order: -1;
   }
 
   .tg-opening-map-stage {
@@ -1273,13 +1336,23 @@ if "entered_platform" not in st.session_state:
     st.session_state.entered_platform = False
 
 
-def normalize_language_value(value: str | None) -> str:
+def normalize_language_value(value: str | list[str] | tuple[str, ...] | None) -> str:
+    if isinstance(value, (list, tuple)):
+        value = value[0] if value else None
+    if isinstance(value, str):
+        value = value.strip()
     normalized = LANGUAGE_VALUE_ALIASES.get(str(value), value)
     return normalized if normalized in LANGUAGE_OPTIONS else "ko"
 
 
 st.session_state.ui_language = normalize_language_value(st.session_state.get("ui_language"))
 st.session_state.language_selector = normalize_language_value(st.session_state.get("language_selector"))
+if hasattr(st, "query_params"):
+    raw_query_language = st.query_params.get("lang")
+    if raw_query_language is not None:
+        query_language = normalize_language_value(raw_query_language)
+        st.session_state.ui_language = query_language
+        st.session_state.language_selector = query_language
 
 
 WORKFLOW_OPTIONS = [
@@ -1473,6 +1546,9 @@ def rerun_app() -> None:
 
 
 def render_opening_screen() -> None:
+    language = current_language()
+    ko_state = "active" if language == "ko" else ""
+    en_state = "active" if language == "en" else ""
     map_markup = (
         f"<img src='{OPENING_MAP_URI}' alt='ToxiGuard-Platform ontology map' />"
         if OPENING_MAP_URI
@@ -1482,6 +1558,10 @@ def render_opening_screen() -> None:
         f"""
 <div class="tg-opening-screen">
   <div class="tg-opening-content">
+    <div class="tg-opening-language" aria-label="{t("language")}">
+      <a class="tg-opening-lang-option {ko_state}" href="?lang=ko">한국어</a>
+      <a class="tg-opening-lang-option {en_state}" href="?lang=en">English</a>
+    </div>
     <div class="tg-opening-brand">
       <div class="tg-opening-mark" aria-hidden="true"></div>
       <h1 class="tg-opening-title">ToxiGuard-Platform</h1>

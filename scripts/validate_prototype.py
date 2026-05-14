@@ -789,6 +789,17 @@ def check_streamlit_language_switch(v: Validator) -> None:
         return
     opening_buttons = [item.label for item in app.button]
     v.require("Enter ToxiGuard-Platform" in opening_buttons, "streamlit_opening:enter_button", str(opening_buttons[:4]))
+    opening_markdown = "\n".join(item.value for item in app.markdown)
+    v.require(
+        'href="?lang=ko"' in opening_markdown and 'href="?lang=en"' in opening_markdown,
+        "streamlit_opening:language_links",
+        opening_markdown[:500],
+    )
+    v.require(
+        ".tg-opening-map-stage:hover .tg-opening-map-canvas img" in opening_markdown and "transform: scale(1.38)" in opening_markdown,
+        "streamlit_opening:hover_zoom_css",
+        opening_markdown[:500],
+    )
     if "Enter ToxiGuard-Platform" not in opening_buttons:
         return
     app.button[opening_buttons.index("Enter ToxiGuard-Platform")].click()
