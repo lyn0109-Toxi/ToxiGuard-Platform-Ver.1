@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import re
 
 import pandas as pd
@@ -290,9 +291,20 @@ TRANSLATIONS = {
     "manual_text_document": {"ko": "붙여넣은 CTD 텍스트", "en": "Pasted CTD Text"},
     "Analyze Document": {"ko": "문서 분석", "en": "Analyze Document"},
     "Analyze Project": {"ko": "프로젝트 분석", "en": "Analyze Project"},
+    "Analyze Uploaded Files": {"ko": "업로드 파일 분석", "en": "Analyze Uploaded Files"},
+    "Analyze Pasted Text": {"ko": "붙여넣은 텍스트 분석", "en": "Analyze Pasted Text"},
+    "Clear Analysis": {"ko": "분석 초기화", "en": "Clear Analysis"},
+    "Selected Files": {"ko": "선택된 파일", "en": "Selected Files"},
+    "processing_documents": {"ko": "문서를 추출하고 CTD 신호를 정리하는 중입니다.", "en": "Extracting documents and organizing CTD signals."},
+    "auto_analysis_complete": {"ko": "업로드된 파일이 자동 분석되었습니다.", "en": "Uploaded files were analyzed automatically."},
+    "analysis_cleared": {"ko": "분석 결과를 초기화했습니다.", "en": "Analysis results were cleared."},
     "analysis_complete": {"ko": "문서 분석이 완료되었습니다.", "en": "Document analysis complete."},
     "project_analysis_complete": {"ko": "프로젝트 문서 분석이 완료되었습니다.", "en": "Project dossier analysis complete."},
     "project_empty_warning": {"ko": "분석할 파일 또는 붙여넣은 텍스트가 필요합니다.", "en": "Add at least one file or pasted text before analysis."},
+    "analysis_persist_hint": {
+        "ko": "분석 결과는 이 세션에 유지되며, 다른 메뉴에서도 제품/물질/제형 정보가 연결됩니다.",
+        "en": "Analysis results stay in this session and feed product, substance, and formulation context into linked menus.",
+    },
     "Project Overview": {"ko": "프로젝트 개요", "en": "Project Overview"},
     "Documents": {"ko": "문서 수", "en": "Documents"},
     "Project Pages": {"ko": "프로젝트 페이지", "en": "Project Pages"},
@@ -837,6 +849,103 @@ def document_summary_has_evidence(summary: dict) -> bool:
     return any(signal_details.get(key) for key in signal_details)
 
 
+def upload_signature(uploaded_files: list | None) -> str:
+    """Stable-enough signature for Streamlit UploadedFile selections."""
+    parts = []
+    for uploaded in uploaded_files or []:
+        parts.append(
+            f"{getattr(uploaded, 'name', 'upload')}|"
+            f"{getattr(uploaded, 'type', '')}|"
+            f"{getattr(uploaded, 'size', 0)}"
+        )
+    return "||".join(parts)
+
+
+def manual_text_signature(manual_text: str) -> str:
+    clean = manual_text.strip()
+    if not clean:
+        return ""
+    digest = hashlib.sha256(clean.encode("utf-8")).hexdigest()[:16]
+    return f"manual|{len(clean)}|{digest}"
+
+
+def reset_document_analysis_state() -> None:
+    st.session_state.project_dossier = {}
+    st.session_state.project_documents = []
+    st.session_state.project_inventory = []
+    st.session_state.document_summaries = []
+    st.session_state.document_text = ""
+    st.session_state.document_pages = []
+    st.session_state.document_summary = None
+    st.session_state.product_context = {}
+    st.session_state.assessments = []
+    for key in [
+        "last_upload_signature",
+        "last_manual_signature",
+        "be_profile",
+        "be_profile_note",
+        "be_reported_f2",
+        "be_source_hint",
+        "be_profile_document_key",
+        "be_result",
+        "be_profile_summary",
+    ]:
+        st.session_state.pop(key, None)
+
+
+def analyze_project_inputs(project_name: str, uploaded_files: list | None, manual_text: str) -> bool:
+    documents = []
+    for uploaded in uploaded_files or []:
+        result = extract_document_text(uploaded.getvalue(), uploaded.type)
+        documents.append(
+            normalize_document_record(
+                name=uploaded.name,
+                content_type=uploaded.type,
+                text=result.text,
+                pages=result.pages,
+                bytes_received=result.bytes_received,
+                warnings=result.warnings,
+                source="upload",
+            )
+        )
+    if manual_text.strip():
+        documents.append(manual_document_record(manual_text, t("manual_text_document")))
+
+    if not documents:
+        st.warning(t("project_empty_warning"))
+        return False
+
+    project = combine_project_documents(project_name, documents)
+    text = project["combined_text"]
+    summary = analyze_ctd_text(text)
+    document_summaries = [
+        document_signal_overview(document, analyze_ctd_text(document.get("text", "")))
+        for document in documents
+    ]
+
+    st.session_state.project_name = project["project_name"]
+    st.session_state.project_dossier = project
+    st.session_state.project_documents = documents
+    st.session_state.project_inventory = project["inventory"]
+    st.session_state.document_summaries = document_summaries
+    st.session_state.document_text = text
+    st.session_state.document_pages = project["pages"]
+    st.session_state.document_summary = summary
+    st.session_state.product_context = summary.get("product_context", {})
+    sync_application_profile_from_context(st.session_state.product_context)
+
+    detected = []
+    for compound in summary.get("candidate_compounds", []):
+        detected.append(assess_smiles(compound["smiles"]))
+    st.session_state.assessments = detected
+
+    st.session_state.last_upload_signature = upload_signature(uploaded_files)
+    st.session_state.last_manual_signature = manual_text_signature(manual_text)
+    for warning in project.get("warnings") or []:
+        st.warning(warning)
+    return True
+
+
 def show_product_context(context: dict | None = None, compact: bool = False) -> None:
     context = context or current_product_context()
     has_context = any(
@@ -1013,62 +1122,52 @@ if workflow == "Document Analyzer":
             t("Upload CTD documents"),
             type=["pdf", "png", "jpg", "jpeg"],
             accept_multiple_files=True,
+            key="project_uploads",
         )
+        current_upload_signature = upload_signature(uploaded_files)
+        if uploaded_files:
+            st.caption(f"{t('Selected Files')}: {len(uploaded_files)}")
+            for uploaded in uploaded_files:
+                st.write(f"- {uploaded.name}")
+
+        action_col, clear_col = st.columns([0.68, 0.32])
+        with action_col:
+            analyze_upload_clicked = st.button(
+                t("Analyze Uploaded Files"),
+                type="primary",
+                use_container_width=True,
+                disabled=not bool(uploaded_files),
+            )
+        with clear_col:
+            clear_clicked = st.button(t("Clear Analysis"), use_container_width=True)
+
+        if clear_clicked:
+            reset_document_analysis_state()
+            st.session_state.last_upload_signature = current_upload_signature
+            st.success(t("analysis_cleared"))
+
         manual_text = st.text_area(
             t("manual_text_label"),
-            height=240,
+            height=180,
             placeholder=t("manual_text_placeholder"),
+            key="manual_ctd_text",
         )
+        analyze_project_clicked = st.button(t("Analyze Project"), use_container_width=True)
 
-        if st.button(t("Analyze Project"), type="primary", use_container_width=True):
-            documents = []
-            for uploaded in uploaded_files or []:
-                result = extract_document_text(uploaded.getvalue(), uploaded.type)
-                documents.append(
-                    normalize_document_record(
-                        name=uploaded.name,
-                        content_type=uploaded.type,
-                        text=result.text,
-                        pages=result.pages,
-                        bytes_received=result.bytes_received,
-                        warnings=result.warnings,
-                        source="upload",
-                    )
-                )
-            if manual_text.strip():
-                documents.append(manual_document_record(manual_text, t("manual_text_document")))
-
-            if not documents:
-                st.warning(t("project_empty_warning"))
-                st.stop()
-
-            project = combine_project_documents(project_name, documents)
-            text = project["combined_text"]
-            summary = analyze_ctd_text(text)
-            document_summaries = [
-                document_signal_overview(document, analyze_ctd_text(document.get("text", "")))
-                for document in documents
-            ]
-
-            st.session_state.project_name = project["project_name"]
-            st.session_state.project_dossier = project
-            st.session_state.project_documents = documents
-            st.session_state.project_inventory = project["inventory"]
-            st.session_state.document_summaries = document_summaries
-            st.session_state.document_text = text
-            st.session_state.document_pages = project["pages"]
-            st.session_state.document_summary = summary
-            st.session_state.product_context = summary.get("product_context", {})
-            sync_application_profile_from_context(st.session_state.product_context)
-
-            detected = []
-            for compound in summary["candidate_compounds"]:
-                detected.append(assess_smiles(compound["smiles"]))
-            st.session_state.assessments = detected
-
-            for warning in project.get("warnings") or []:
-                st.warning(warning)
-            st.success(t("project_analysis_complete"))
+        auto_analyze_upload = (
+            bool(uploaded_files)
+            and bool(current_upload_signature)
+            and not manual_text.strip()
+            and current_upload_signature != st.session_state.get("last_upload_signature")
+            and not clear_clicked
+        )
+        if auto_analyze_upload or analyze_upload_clicked or analyze_project_clicked:
+            analysis_manual_text = manual_text if analyze_project_clicked else ""
+            with st.spinner(t("processing_documents")):
+                completed = analyze_project_inputs(project_name, uploaded_files, analysis_manual_text)
+            if completed:
+                st.success(t("auto_analysis_complete") if auto_analyze_upload else t("project_analysis_complete"))
+                st.caption(t("analysis_persist_hint"))
 
     with right:
         st.subheader(t("Document Signals"))

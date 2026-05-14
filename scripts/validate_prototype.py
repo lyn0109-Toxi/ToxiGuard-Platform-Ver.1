@@ -785,6 +785,43 @@ def check_streamlit_language_switch(v: Validator) -> None:
     v.require("Document Signals" in subheaders, "streamlit_language_switch:english_signals", str(subheaders[:5]))
 
 
+def check_streamlit_document_analyzer_flow(v: Validator) -> None:
+    """Validate that pasted CTD text produces visible Document Analyzer results."""
+    try:
+        from streamlit.testing.v1 import AppTest
+    except Exception as exc:
+        v.warn("streamlit_document_flow:apptest_import", f"Skipped: {exc}")
+        return
+
+    app = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=120)
+    app.run(timeout=120)
+    if app.exception:
+        v.fail("streamlit_document_flow:initial_render", "; ".join(str(item.value) for item in app.exception))
+        return
+    button_labels = [item.label for item in app.button]
+    text_area_labels = [item.label for item in app.text_area]
+    v.require("프로젝트 분석" in button_labels, "streamlit_document_flow:analyze_button", str(button_labels))
+    v.require("또는 CTD 문서 텍스트 붙여넣기" in text_area_labels, "streamlit_document_flow:text_area", str(text_area_labels))
+
+    ctd_text = (
+        "3.2.P.5.1 Specifications. Assay 95.0-105.0%. "
+        "3.2.P.5.2 Analytical Procedures. HPLC standard solution 0.10 mg/mL "
+        "sample solution 0.10 mg/mL. Comparative dissolution f2 value 67. "
+        "Stability 24 months."
+    )
+    app.text_area[0].set_value(ctd_text)
+    app.button[button_labels.index("프로젝트 분석")].click()
+    app.run(timeout=120)
+    if app.exception:
+        v.fail("streamlit_document_flow:analysis_render", "; ".join(str(item.value) for item in app.exception))
+        return
+    metric_values = {item.label: item.value for item in app.metric}
+    success_messages = [item.value for item in app.success]
+    v.require("프로젝트 문서 분석이 완료되었습니다." in success_messages, "streamlit_document_flow:success", str(success_messages))
+    v.require(metric_values.get("문서 수") == "1", "streamlit_document_flow:project_metrics", str(metric_values))
+    v.require(len(app.dataframe) >= 3, "streamlit_document_flow:visible_tables", f"{len(app.dataframe)} dataframes")
+
+
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
     try:
         from pypdf import PdfReader
@@ -852,6 +889,7 @@ def main() -> int:
         check_real_pdf_dependencies,
         check_real_document_pipeline,
         check_streamlit_language_switch,
+        check_streamlit_document_analyzer_flow,
     ]
 
     for check in checks:
