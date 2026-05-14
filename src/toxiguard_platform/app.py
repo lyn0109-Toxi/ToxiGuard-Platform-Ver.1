@@ -238,7 +238,8 @@ header[data-testid="stHeader"],
     radial-gradient(circle at 74% 78%, rgba(183, 121, 31, 0.12), transparent 32%),
     linear-gradient(135deg, #0b1221 0%, #101828 48%, #0b1221 100%);
   color: #eef4ff;
-  padding: clamp(1rem, 1.6vw, 1.6rem);
+  padding: clamp(0.9rem, 1.35vw, 1.4rem);
+  padding-bottom: 5.8rem;
 }
 
 .tg-opening-screen::before {
@@ -256,17 +257,19 @@ header[data-testid="stHeader"],
 .tg-opening-content {
   position: relative;
   z-index: 1;
-  min-height: calc(100vh - 2rem);
+  min-height: calc(100vh - 6.8rem);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.62rem;
+  max-width: 1760px;
+  margin: 0 auto;
 }
 
 .tg-opening-brand {
   display: flex;
   align-items: center;
-  gap: 1.35rem;
-  margin-top: 0.25rem;
+  gap: 1rem;
+  margin-top: 0;
 }
 
 .tg-opening-eyebrow {
@@ -284,8 +287,8 @@ header[data-testid="stHeader"],
 }
 
 .tg-opening-mark {
-  width: clamp(3.5rem, 5vw, 5.2rem);
-  height: clamp(3.5rem, 5vw, 5.2rem);
+  width: clamp(3rem, 4.1vw, 4.35rem);
+  height: clamp(3rem, 4.1vw, 4.35rem);
   position: relative;
   flex: 0 0 auto;
   overflow: hidden;
@@ -334,7 +337,7 @@ header[data-testid="stHeader"],
 
 .tg-opening-title {
   margin: 0;
-  font-size: clamp(3rem, 5.2vw, 5.45rem);
+  font-size: clamp(2.8rem, 4.4vw, 4.75rem);
   line-height: 0.95;
   font-weight: 900;
   letter-spacing: 0;
@@ -346,11 +349,11 @@ header[data-testid="stHeader"],
 
 .tg-opening-tagline {
   color: #dbeafe;
-  font-size: clamp(0.92rem, 1.35vw, 1.15rem);
+  font-size: clamp(0.88rem, 1.12vw, 1.04rem);
   max-width: 1320px;
   line-height: 1.35;
   margin-top: 0.55rem;
-  padding: 0.5rem 0.8rem;
+  padding: 0.44rem 0.72rem;
   border-left: 3px solid rgba(251, 191, 36, 0.78);
   border-radius: 12px;
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.64), rgba(15, 23, 42, 0.1));
@@ -359,14 +362,14 @@ header[data-testid="stHeader"],
 .tg-opening-mission-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.62rem;
   max-width: 1320px;
 }
 
 .tg-opening-mission-card {
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 14px;
-  padding: 0.76rem 0.85rem;
+  padding: 0.62rem 0.72rem;
   background: rgba(15, 23, 42, 0.62);
   box-shadow: 0 16px 34px rgba(2, 6, 23, 0.18);
 }
@@ -374,23 +377,23 @@ header[data-testid="stHeader"],
 .tg-opening-mission-card strong {
   display: block;
   color: #fef3c7;
-  font-size: 0.83rem;
+  font-size: 0.78rem;
   margin-bottom: 0.28rem;
 }
 
 .tg-opening-mission-card span {
   display: block;
   color: #cbd5e1;
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: 0.78rem;
+  line-height: 1.32;
 }
 
 .tg-opening-map-stage {
   position: relative;
   overflow: hidden;
-  margin-top: 0.25rem;
+  margin-top: 0.12rem;
   border: 1px solid rgba(94, 234, 212, 0.58);
-  border-radius: 24px;
+  border-radius: 22px;
   background:
     linear-gradient(135deg, rgba(2, 6, 23, 0.9), rgba(8, 47, 73, 0.62)),
     rgba(15, 23, 42, 0.62);
@@ -398,9 +401,9 @@ header[data-testid="stHeader"],
     0 30px 80px rgba(2, 6, 23, 0.46),
     0 0 0 1px rgba(251, 191, 36, 0.12) inset,
     0 0 54px rgba(94, 234, 212, 0.13);
-  padding: clamp(0.45rem, 0.8vw, 0.75rem);
-  height: min(56vh, 47vw);
-  min-height: 360px;
+  padding: clamp(0.42rem, 0.68vw, 0.68rem);
+  height: clamp(330px, 44vh, 620px);
+  min-height: 0;
 }
 
 .tg-opening-map-canvas {
@@ -457,13 +460,13 @@ header[data-testid="stHeader"],
 
 .tg-opening-note {
   position: fixed;
-  left: 2rem;
-  bottom: 1.35rem;
+  left: clamp(1rem, 1.35vw, 1.4rem);
+  bottom: 1.08rem;
   z-index: 9010;
-  max-width: min(42rem, calc(50vw - 16rem));
+  max-width: min(25rem, calc(50vw - 13rem));
   padding: 0.45rem 0.75rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 999px;
+  border-radius: 14px;
   background: rgba(2, 6, 23, 0.72);
   color: #94a3b8;
   font-size: 0.78rem;
@@ -471,23 +474,28 @@ header[data-testid="stHeader"],
   backdrop-filter: blur(10px);
 }
 
+.stApp:has(.tg-opening-screen) div[data-testid="stElementContainer"]:has([data-testid="stButton"]),
+.stApp:has(.tg-opening-screen) div.element-container:has([data-testid="stButton"]) {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 1rem !important;
+  transform: translateX(-50%) !important;
+  z-index: 9020 !important;
+  width: min(24rem, calc(100vw - 2rem)) !important;
+}
+
 .stApp:has(.tg-opening-screen) [data-testid="stButton"] {
-  position: fixed;
-  left: 50%;
-  bottom: 1.28rem;
-  transform: translateX(-50%);
-  z-index: 9020;
-  width: min(28rem, calc(100vw - 2rem));
+  width: 100% !important;
 }
 
 .stApp:has(.tg-opening-screen) [data-testid="stButton"] button {
-  width: 100%;
-  min-height: 3.2rem;
+  width: 100% !important;
+  min-height: 2.9rem;
   border-radius: 14px;
   border: 1px solid rgba(251, 191, 36, 0.72) !important;
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.96), rgba(94, 234, 212, 0.78)) !important;
   color: #0f172a !important;
-  font-size: 1.02rem;
+  font-size: 0.96rem;
   font-weight: 900;
   box-shadow:
     0 18px 48px rgba(2, 6, 23, 0.42),
@@ -520,10 +528,11 @@ header[data-testid="stHeader"],
 @media (max-width: 900px) {
   .tg-opening-screen {
     padding: 1rem;
+    padding-bottom: 5.5rem;
   }
 
   .tg-opening-content {
-    min-height: calc(100vh - 2rem);
+    min-height: calc(100vh - 6rem);
   }
 
   .tg-opening-brand {
@@ -531,7 +540,7 @@ header[data-testid="stHeader"],
   }
 
   .tg-opening-map-stage {
-    height: 50vh;
+    height: 42vh;
     min-height: 280px;
   }
 
@@ -540,9 +549,7 @@ header[data-testid="stHeader"],
   }
 
   .tg-opening-note {
-    left: 1rem;
-    right: 1rem;
-    bottom: 5.1rem;
+    position: static;
     max-width: none;
     border-radius: 14px;
   }
