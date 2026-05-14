@@ -4,9 +4,11 @@ import importlib
 import importlib.util
 import io
 import json
+import os
 import py_compile
 import re
 import sys
+import time
 import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -483,7 +485,7 @@ Time (minutes)
 F(2)
 Reference
 13.3 46.2 59.6 72.1 77.7 81.0 84.4 85.9
-Myrept tablet 500mg
+Test Drug
 24.1
 46.5
 56.6
@@ -500,6 +502,21 @@ Figure 3.2.P.2.2.1-5.
         len(extracted_profile) == 8 and int(reported_f2 or 0) == 67,
         "platform:be_document_profile_seed",
         extracted_profile.to_json(force_ascii=False),
+    )
+    compact_profile, compact_f2, compact_hint = dissolution_profile_from_document_text(
+        """
+Time (minutes) 5 10 15 30 45 60 90 120 F(2)
+Reference 13.3  46.2  59.6  72.1  77.7  81.0  84.4  85.9  67 Test Drug  24.1 46.5 56.6 68.7 74.8 79.0 83.2 84.2
+Figure 3.2.P.2.2.1-5.
+"""
+    )
+    v.require(
+        len(compact_profile) == 8
+        and int(compact_f2 or 0) == 67
+        and "Test Drug" in compact_hint
+        and compact_profile["Test Mean (%)"].round(1).tolist() == [24.1, 46.5, 56.6, 68.7, 74.8, 79.0, 83.2, 84.2],
+        "platform:be_compact_document_profile_seed",
+        compact_profile.to_json(force_ascii=False),
     )
 
     genotoxicity = assess_genotoxicity_table(pd.DataFrame([{"Compound": "Aniline", "Role": "impurity", "SMILES": "c1ccc(N)cc1"}]))
@@ -594,22 +611,22 @@ def check_reporting(v: Validator) -> None:
         "application_snapshot": {
             "application_type": "ANDA",
             "application_number": "TBD",
-            "product_name": "마이렙트정 500밀리그램 / Myrept tablet 500 mg",
+            "product_name": "검증정 500밀리그램 / Validation tablet 500 mg",
             "applicant": "검증회사 / Validation Company",
             "dosage_form": "정제 / Tablet",
             "route": "경구 / Oral",
             "review_status": "검토 중 / In Review",
         },
         "product_context": {
-            "product_name": "마이렙트정 500밀리그램 / Myrept tablet 500 mg",
-            "active_substance": "미코페놀레이트 모페틸 / Mycophenolate mofetil",
+            "product_name": "검증정 500밀리그램 / Validation tablet 500 mg",
+            "active_substance": "검증성분 / Validation API",
             "strength": "500 mg",
             "dosage_form": "필름코팅정 / Film-coated tablet",
             "route": "경구 / Oral",
             "basic_info": [
                 {
                     "Field": "제품명 / Product Name",
-                    "Value": "마이렙트정 500밀리그램 / Myrept tablet 500 mg",
+                    "Value": "검증정 500밀리그램 / Validation tablet 500 mg",
                     "Reviewer Check": "원문 확인 / Verify source",
                 }
             ],
@@ -665,13 +682,15 @@ def check_reporting(v: Validator) -> None:
 
 
 def check_real_pdf_dependencies(v: Validator) -> None:
-    sample_paths = [
-        Path("/Users/leeyoung-nam/Desktop/Preparation of Work/Work Experiences/Analytical Method of Pharmaceutical Product.pdf"),
-        Path("/Users/leeyoung-nam/Desktop/Preparation of Work/Work Experiences/The process of Test Methods as Young.pdf"),
-    ]
+    configured_paths = os.environ.get("TOXIGUARD_VALIDATION_PDFS", "").strip()
+    if not configured_paths:
+        v.pass_("real_pdf:optional_sources", "Optional local PDF dependency validation is not configured.")
+        return
+
+    sample_paths = [Path(item).expanduser() for item in configured_paths.split(os.pathsep) if item.strip()]
     for path in sample_paths:
         if not path.exists():
-            v.warn(f"real_pdf:{path.name}", "File not found; skipped.")
+            v.fail(f"real_pdf:{path.name}", "Configured local PDF was not found.")
             continue
         try:
             from pypdf import PdfReader
@@ -690,6 +709,80 @@ def check_real_pdf_dependencies(v: Validator) -> None:
                 )
         except Exception as exc:
             v.warn(f"real_pdf:{path.name}", f"Extraction check failed: {exc}")
+
+
+def check_real_document_pipeline(v: Validator) -> None:
+    """Validate an optional local CTD document through the full analyzer path."""
+    raw_path = os.environ.get("TOXIGUARD_VALIDATION_REAL_CTD_PDF", "").strip()
+    if not raw_path:
+        v.pass_("real_document:optional_source_pdf", "Optional local real-document validation is not configured.")
+        return
+
+    path = Path(raw_path).expanduser()
+    if not path.exists():
+        v.fail("real_document:source_pdf", "Configured local CTD PDF was not found.")
+        return
+
+    from toxiguard_platform.modules.document_intelligence import analyze_ctd_text, extract_document_text
+    from toxiguard_platform.modules.platform_tools import (
+        build_pharmaceutical_equivalence_matrix,
+        calculate_f2,
+        dissolution_profile_from_document_text,
+    )
+    from toxiguard_platform.modules.specification_structure import build_test_item_matrix
+
+    started = time.perf_counter()
+    extracted = extract_document_text(path.read_bytes(), "application/pdf")
+    elapsed = time.perf_counter() - started
+    summary = analyze_ctd_text(extracted.text)
+    context = summary.get("product_context") or {}
+    details = summary.get("signal_details") or {}
+    matrix = build_test_item_matrix(summary)
+    equivalence = build_pharmaceutical_equivalence_matrix(summary, context)
+    be_profile, reported_f2, source_hint = dissolution_profile_from_document_text(extracted.text)
+
+    v.require(elapsed < 10, "real_document:extraction_speed", f"{elapsed:.2f}s for {len(extracted.pages)} pages")
+    v.require(len(extracted.pages) >= 10 and len(extracted.text) >= 10000, "real_document:text_volume", f"{len(extracted.pages)} pages, {len(extracted.text)} chars")
+    v.require(bool(context.get("product_name")), "real_document:product_name", str(context.get("product_name", "")))
+    v.require(bool(context.get("active_substance")), "real_document:active_substance", str(context.get("active_substance", "")))
+    v.require(bool(context.get("strength")), "real_document:strength", str(context.get("strength", "")))
+    v.require(bool(context.get("dosage_form")), "real_document:dosage_form", str(context.get("dosage_form", "")))
+    v.require(len(context.get("formulation") or []) >= 3, "real_document:formulation_rows", f"{len(context.get('formulation') or [])} rows")
+    v.require(len(details.get("test_methods", [])) >= 10, "real_document:test_method_signals", f"{len(details.get('test_methods', []))} rows")
+    v.require(len(details.get("bioequivalence", [])) >= 1, "real_document:bioequivalence_signals", f"{len(details.get('bioequivalence', []))} rows")
+    v.require(len(details.get("stability", [])) >= 5, "real_document:stability_signals", f"{len(details.get('stability', []))} rows")
+    v.require(len(matrix) >= 5, "real_document:test_item_matrix", f"{len(matrix)} rows")
+    v.require(len(equivalence) >= 8, "real_document:equivalence_matrix", f"{len(equivalence)} rows")
+    v.require(len(be_profile) >= 3 and reported_f2 is not None, "real_document:dissolution_profile", f"{len(be_profile)} rows; reported f2={reported_f2}")
+    if not be_profile.empty:
+        f2_result = calculate_f2(be_profile, bootstrap_runs=200)
+        v.require(f2_result.f2 >= 50, "real_document:f2_bootstrap", f"f2={f2_result.f2}; P(f2>=50)={f2_result.probability_f2_ge_50}%")
+
+
+def check_streamlit_language_switch(v: Validator) -> None:
+    """Validate Streamlit rerun behavior when switching Korean to English."""
+    try:
+        from streamlit.testing.v1 import AppTest
+    except Exception as exc:
+        v.warn("streamlit_language_switch:apptest_import", f"Skipped: {exc}")
+        return
+
+    app = AppTest.from_file(str(ROOT / "streamlit_app.py"), default_timeout=30)
+    app.run()
+    if app.exception:
+        v.fail("streamlit_language_switch:initial_render", "; ".join(str(item.value) for item in app.exception))
+        return
+    if not app.selectbox:
+        v.fail("streamlit_language_switch:selector", "Language selector was not rendered.")
+        return
+    app.selectbox[0].set_value("en")
+    app.run()
+    if app.exception:
+        v.fail("streamlit_language_switch:english_render", "; ".join(str(item.value) for item in app.exception))
+        return
+    subheaders = [item.value for item in app.subheader]
+    v.require("CTD Document Intake" in subheaders, "streamlit_language_switch:english_intake", str(subheaders[:5]))
+    v.require("Document Signals" in subheaders, "streamlit_language_switch:english_signals", str(subheaders[:5]))
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
@@ -757,6 +850,8 @@ def main() -> int:
         check_platform_tools,
         check_reporting,
         check_real_pdf_dependencies,
+        check_real_document_pipeline,
+        check_streamlit_language_switch,
     ]
 
     for check in checks:

@@ -5,7 +5,7 @@ Streamlit-based review workspace for CTD document intelligence, ToxiGuard platfo
 ## Run Locally
 
 ```bash
-cd "/Users/leeyoung-nam/Desktop/ToxiGuard-Platform Ver.1"
+cd "ToxiGuard-Platform Ver.1"
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -15,7 +15,7 @@ streamlit run streamlit_app.py
 If your Python already has the required packages:
 
 ```bash
-cd "/Users/leeyoung-nam/Desktop/ToxiGuard-Platform Ver.1"
+cd "ToxiGuard-Platform Ver.1"
 python3 -m streamlit run streamlit_app.py
 ```
 

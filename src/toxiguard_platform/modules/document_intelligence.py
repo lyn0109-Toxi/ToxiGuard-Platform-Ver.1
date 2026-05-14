@@ -65,6 +65,8 @@ def extract_document_text(content: bytes, content_type: str | None) -> DocumentR
 
 def _extract_pdf_pages(content: bytes, warnings: list[str]) -> list[dict]:
     pypdf_pages = _extract_pdf_pages_with_pypdf(content, warnings)
+    if _has_reviewable_pdf_text(pypdf_pages):
+        return pypdf_pages
     if (
         pypdf_pages
         and _pages_quality_score(pypdf_pages) >= 0.72
@@ -80,6 +82,35 @@ def _extract_pdf_pages(content: bytes, warnings: list[str]) -> list[dict]:
     if pypdf_pages:
         return pypdf_pages
     return [{"page": 1, "text": ""}]
+
+
+def _has_reviewable_pdf_text(pages: list[dict]) -> bool:
+    """Return True when pypdf already produced enough CTD text to review.
+
+    Some regulatory PDFs are text-readable but have line-spacing artifacts that
+    make a strict quality score look worse than the actual reviewer value. In
+    that case, using pypdf immediately is better than falling into a slow
+    whole-document pdfminer pass.
+    """
+    if not pages:
+        return False
+    text = "\n".join(page.get("text", "") for page in pages)
+    chars = len(text.strip())
+    if chars < 1500:
+        return False
+    meaningful = len(re.findall(r"[A-Za-z가-힣0-9]", text))
+    meaningful_ratio = meaningful / max(len(text), 1)
+    markers = len(
+        re.findall(
+            r"3\.2\.|CTD|pharmaceutical development|specification|method|"
+            r"dissolution|stability|formulation|excipient|제품명|주성분|"
+            r"기준|시험방법|용출|안정성|제형|첨가제",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+    damaged = len(re.findall(r"[■�□]", text))
+    return meaningful_ratio >= 0.45 and markers >= 3 and damaged <= max(chars * 0.02, 20)
 
 
 def _extract_pdf_pages_with_pypdf(content: bytes, warnings: list[str]) -> list[dict]:

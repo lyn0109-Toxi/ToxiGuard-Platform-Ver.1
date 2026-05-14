@@ -385,12 +385,18 @@ def dissolution_profile_from_document_text(text: str) -> tuple[pd.DataFrame, flo
         if not re_search(r"time\s*\(min(?:ute)?s?\)", line):
             continue
 
+        compact_candidate = _compact_dissolution_candidate(lines, index)
+        if compact_candidate is not None:
+            candidates.append(compact_candidate)
+            continue
+
         times: list[float] = []
         cursor = index + 1
-        while cursor < len(lines) and not re_search(r"^f\s*\(?2\)?$", lines[cursor]):
+        lookahead_limit = min(index + 35, len(lines))
+        while cursor < lookahead_limit and not re_search(r"^f\s*\(?2\)?$", lines[cursor]):
             times.extend(_numbers_from_numeric_line(lines[cursor]))
             cursor += 1
-        if cursor >= len(lines) or len(times) < 3:
+        if cursor >= lookahead_limit or len(times) < 3:
             continue
 
         numeric_values: list[float] = []
@@ -431,6 +437,61 @@ def dissolution_profile_from_document_text(text: str) -> tuple[pd.DataFrame, flo
         return pd.DataFrame(), None, ""
     _, profile, reported_f2, source_hint = candidates[-1]
     return profile, reported_f2, source_hint
+
+
+def _compact_dissolution_candidate(lines: list[str], index: int) -> tuple[int, pd.DataFrame, float | None, str] | None:
+    """Parse one-line CTD dissolution tables with Reference/Test rows.
+
+    Example:
+    Time (minutes) 5 10 15 30 45 60 90 120 F(2)
+    Reference 13.3 ... 85.9 67 Test Drug 24.1 ... 84.2
+    """
+    time_line = re.sub(r"F\s*\(?2\)?", "", lines[index], flags=re.IGNORECASE)
+    times = _numbers_from_numeric_line(re.sub(r"(?i)time\s*\(min(?:ute)?s?\)", "", time_line))
+    if len(times) < 3:
+        return None
+
+    window = " ".join(lines[index + 1 : min(index + 8, len(lines))])
+    window = re.split(r"\b(?:Figure|Fig\.?|Table)\s+\d", window, maxsplit=1, flags=re.IGNORECASE)[0]
+    reference_pos = window.lower().find("reference")
+    if reference_pos < 0:
+        return None
+    compact_numbers = _numbers_from_dissolution_text(window[reference_pos:])
+    if len(compact_numbers) < len(times) * 2:
+        return None
+
+    reference = compact_numbers[: len(times)]
+    test = compact_numbers[-len(times) :]
+    reported_f2 = None
+    if len(compact_numbers) > len(times) * 2:
+        possible_f2 = compact_numbers[len(times)]
+        if 0 <= possible_f2 <= 100:
+            reported_f2 = possible_f2
+    profile = pd.DataFrame(
+        [
+            {
+                "Time (min)": time,
+                "Reference Mean (%)": ref,
+                "Reference SD": 0.0,
+                "Reference n": 12,
+                "Test Mean (%)": tst,
+                "Test SD": 0.0,
+                "Test n": 12,
+            }
+            for time, ref, tst in zip(times, reference, test, strict=False)
+        ]
+    )
+    return index, profile, reported_f2, window[:240]
+
+
+def _numbers_from_dissolution_text(value: str) -> list[float]:
+    numbers: list[float] = []
+    for token in re.findall(r"[-+]?\d+(?:\.\d+)?", value):
+        try:
+            numbers.append(float(token))
+        except ValueError:
+            continue
+    return numbers
 
 
 def dissolution_profile_summary(profile_df: pd.DataFrame) -> pd.DataFrame:
