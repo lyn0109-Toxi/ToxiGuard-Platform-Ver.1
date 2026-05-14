@@ -817,6 +817,9 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
     text_area_labels = [item.label for item in app.text_area]
     v.require("프로젝트 분석" in button_labels, "streamlit_document_flow:analyze_button", str(button_labels))
     v.require("또는 CTD 문서 텍스트 붙여넣기" in text_area_labels, "streamlit_document_flow:text_area", str(text_area_labels))
+    v.require(any("문서 분석" in label for label in button_labels), "streamlit_sidebar:document_nav_button", str(button_labels[:8]))
+    v.require(any("분자 스크리닝" in label for label in button_labels), "streamlit_sidebar:molecule_nav_button", str(button_labels[:8]))
+    v.require("코멘트" in text_area_labels, "streamlit_sidebar:comment_box", str(text_area_labels))
 
     ctd_text = (
         "3.2.P.5.1 Specifications. Assay 95.0-105.0%. "
@@ -824,7 +827,8 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
         "sample solution 0.10 mg/mL. Comparative dissolution f2 value 67. "
         "Stability 24 months."
     )
-    app.text_area[0].set_value(ctd_text)
+    ctd_text_area = text_area_labels.index("또는 CTD 문서 텍스트 붙여넣기")
+    app.text_area[ctd_text_area].set_value(ctd_text)
     app.button[button_labels.index("프로젝트 분석")].click()
     app.run(timeout=120)
     if app.exception:

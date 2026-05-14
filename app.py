@@ -21,9 +21,8 @@ if VENDOR.exists() and str(VENDOR) not in sys.path:
 def _run_app() -> None:
     module_name = "toxiguard_platform.app"
     if module_name in sys.modules:
-        importlib.reload(sys.modules[module_name])
-    else:
-        importlib.import_module(module_name)
+        del sys.modules[module_name]
+    importlib.import_module(module_name)
 
 
 try:

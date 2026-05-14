@@ -102,6 +102,70 @@ st.markdown(
   color: #eef4ff !important;
 }
 
+[data-testid="stSidebar"] [data-testid="stButton"] button {
+  width: 100%;
+  min-height: 2.6rem;
+  justify-content: flex-start;
+  border-radius: 10px;
+  border: 1px solid rgba(238, 244, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef4ff !important;
+  font-weight: 680;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button[kind="primary"],
+[data-testid="stSidebar"] [data-testid="baseButton-primary"] {
+  border-color: rgba(255, 91, 91, 0.85) !important;
+  background: #ff4b4b !important;
+  color: #ffffff !important;
+}
+
+[data-testid="stSidebar"] [data-baseweb="textarea"],
+[data-testid="stSidebar"] [data-testid="stTextArea"] [data-baseweb="base-input"],
+[data-testid="stSidebar"] [data-testid="stTextArea"] [data-baseweb="textarea"] > div,
+[data-testid="stSidebar"] textarea {
+  background-color: #172233 !important;
+  border: 1px solid rgba(238, 244, 255, 0.18) !important;
+  color: #eef4ff !important;
+}
+
+[data-testid="stSidebar"] [data-baseweb="textarea"] textarea {
+  background-color: transparent !important;
+  color: #eef4ff !important;
+  caret-color: #ffffff !important;
+}
+
+[data-testid="stSidebar"] textarea::placeholder {
+  color: rgba(238, 244, 255, 0.52) !important;
+  opacity: 1 !important;
+}
+
+.sidebar-dev-card {
+  border-top: 1px solid rgba(238, 244, 255, 0.12);
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+}
+
+.sidebar-dev-card strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.45rem;
+}
+
+.sidebar-dev-card span {
+  display: block;
+  color: rgba(238, 244, 255, 0.72) !important;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 #MainMenu,
 footer,
 [data-testid="stDeployButton"],
@@ -218,6 +282,18 @@ TRANSLATIONS = {
     "prototype_status": {"ko": "프로토타입 상태", "en": "Prototype status"},
     "decision_support_only": {"ko": "의사결정 보조용", "en": "Decision-support only"},
     "expert_review_required": {"ko": "전문가 검토 필요", "en": "Expert review required"},
+    "developer_info": {"ko": "개발자 정보", "en": "Developer information"},
+    "developer_name": {"ko": "개발자", "en": "Developer"},
+    "developer_role": {"ko": "역할", "en": "Role"},
+    "developer_role_value": {"ko": "Regulatory AI Prototype Design", "en": "Regulatory AI Prototype Design"},
+    "developer_project": {"ko": "프로젝트", "en": "Project"},
+    "sidebar_comment": {"ko": "코멘트", "en": "Comment"},
+    "sidebar_comment_placeholder": {
+        "ko": "개발/검토 메모를 남겨두세요.",
+        "en": "Leave development or review notes here.",
+    },
+    "save_comment": {"ko": "코멘트 저장", "en": "Save comment"},
+    "comment_saved": {"ko": "코멘트를 이 세션에 저장했습니다.", "en": "Comment saved in this session."},
     "Document Analyzer": {"ko": "문서 분석", "en": "Document Analyzer"},
     "Molecule Screening": {"ko": "분자 스크리닝", "en": "Molecule Screening"},
     "ToxiGuard Tools": {"ko": "ToxiGuard 도구", "en": "ToxiGuard Tools"},
@@ -518,6 +594,27 @@ if "language_selector" not in st.session_state:
     st.session_state.language_selector = st.session_state.ui_language
 if "workflow_selector" not in st.session_state:
     st.session_state.workflow_selector = "Document Analyzer"
+if "sidebar_comment" not in st.session_state:
+    st.session_state.sidebar_comment = ""
+
+
+WORKFLOW_OPTIONS = [
+    "Document Analyzer",
+    "Molecule Screening",
+    "ToxiGuard Tools",
+    "FDA Review Worksheet",
+    "Regulatory Sources",
+    "Regulatory Report",
+]
+
+WORKFLOW_ICONS = {
+    "Document Analyzer": "DOC",
+    "Molecule Screening": "MOL",
+    "ToxiGuard Tools": "TOOL",
+    "FDA Review Worksheet": "FDA",
+    "Regulatory Sources": "SRC",
+    "Regulatory Report": "RPT",
+}
 
 
 def current_language() -> str:
@@ -661,6 +758,52 @@ def workflow_label(value: str) -> str:
 
 def option_label(value: str) -> str:
     return t(value)
+
+
+def rerun_app() -> None:
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:
+        st.experimental_rerun()
+
+
+def render_sidebar_menu() -> str:
+    selected = st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
+    st.caption(t("view"))
+    for option in WORKFLOW_OPTIONS:
+        is_selected = option == selected
+        marker = "●" if is_selected else "○"
+        label = f"{marker} {WORKFLOW_ICONS[option]}  {workflow_label(option)}"
+        if st.button(
+            label,
+            key=f"sidebar_nav_{option.lower().replace(' ', '_')}",
+            type="primary" if is_selected else "secondary",
+            use_container_width=True,
+        ):
+            if not is_selected:
+                st.session_state.workflow_selector = option
+                rerun_app()
+    return st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
+
+
+def render_sidebar_footer() -> None:
+    st.markdown(
+        f"""
+<div class="sidebar-dev-card">
+  <strong>{t("developer_info")}</strong>
+  <span>{t("developer_name")}: Young Lee</span>
+  <span>{t("developer_role")}: {t("developer_role_value")}</span>
+  <span>{t("developer_project")}: ToxiGuard-Platform Ver.1</span>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+    st.text_area(
+        t("sidebar_comment"),
+        key="sidebar_comment",
+        placeholder=t("sidebar_comment_placeholder"),
+        height=96,
+    )
 
 
 def render_language_selector() -> None:
@@ -1060,23 +1203,12 @@ render_status_strip()
 
 with st.sidebar:
     st.subheader(t("workspace"))
-    workflow = st.radio(
-        t("view"),
-        [
-            "Document Analyzer",
-            "Molecule Screening",
-            "ToxiGuard Tools",
-            "FDA Review Worksheet",
-            "Regulatory Sources",
-            "Regulatory Report",
-        ],
-        format_func=workflow_label,
-        key="workflow_selector",
-    )
+    workflow = render_sidebar_menu()
     st.divider()
     st.caption(t("prototype_status"))
     st.write(t("decision_support_only"))
     st.write(t("expert_review_required"))
+    render_sidebar_footer()
 
 
 if "document_summary" not in st.session_state:
