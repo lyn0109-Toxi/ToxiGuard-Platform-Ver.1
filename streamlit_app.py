@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import platform
+import importlib
 import sys
 import traceback
 from pathlib import Path
@@ -16,8 +17,17 @@ if str(SRC) not in sys.path:
 if VENDOR.exists() and str(VENDOR) not in sys.path:
     sys.path.insert(0, str(VENDOR))
 
+
+def _run_app() -> None:
+    module_name = "toxiguard_platform.app"
+    if module_name in sys.modules:
+        importlib.reload(sys.modules[module_name])
+    else:
+        importlib.import_module(module_name)
+
+
 try:
-    import toxiguard_platform.app  # noqa: F401,E402
+    _run_app()
 except Exception as exc:  # pragma: no cover - deployment diagnostic guard
     import streamlit as st
 
