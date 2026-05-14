@@ -807,6 +807,12 @@ def check_streamlit_language_switch(v: Validator) -> None:
     subheaders = [item.value for item in app.subheader]
     v.require("CTD Document Intake" in subheaders, "streamlit_language_switch:english_intake", str(subheaders[:5]))
     v.require("Document Signals" in subheaders, "streamlit_language_switch:english_signals", str(subheaders[:5]))
+    english_menu_text = "\n".join([item.label for item in app.button] + [item.value for item in app.subheader] + [item.value for item in app.caption])
+    v.require(
+        not re.search(r"[가-힣]", english_menu_text),
+        "streamlit_language_switch:english_ui_no_hangul",
+        english_menu_text[:600],
+    )
 
 
 def check_streamlit_document_analyzer_flow(v: Validator) -> None:

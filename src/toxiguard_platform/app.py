@@ -299,23 +299,23 @@ header[data-testid="stHeader"],
 .tg-opening-mark::before {
   width: 0.72rem;
   height: 0.72rem;
-  left: 0.86rem;
-  top: 1.05rem;
-  background: #5eead4;
-  box-shadow: 0 0 22px rgba(94, 234, 212, 0.66);
-  animation: tgOpeningDotA 4.2s ease-in-out infinite alternate;
+  left: 0.78rem;
+  top: 0.82rem;
+  background: #fbbf24;
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.66);
+  animation: orbitDotA 3.8s ease-in-out infinite alternate;
 }
 
 .tg-opening-mark::after {
   width: 0.62rem;
   height: 0.62rem;
-  right: 1rem;
-  bottom: 1.18rem;
-  background: #fbbf24;
+  right: 0.74rem;
+  bottom: 0.8rem;
+  background: #5eead4;
   box-shadow:
-    -1.75rem -0.65rem 0 #38bdf8,
-    0 0 24px rgba(251, 191, 36, 0.58);
-  animation: tgOpeningDotB 4.8s ease-in-out infinite alternate;
+    -2.6rem -1.15rem 0 #38bdf8,
+    0 0 24px rgba(94, 234, 212, 0.58);
+  animation: orbitDotB 4.6s ease-in-out infinite alternate;
 }
 
 .tg-opening-title {
@@ -456,14 +456,16 @@ header[data-testid="stHeader"],
   filter: brightness(1.04);
 }
 
-@keyframes tgOpeningDotA {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(1.6rem, 1.1rem, 0); }
+@keyframes orbitDotA {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  42% { transform: translate3d(2.75rem, 0.8rem, 0) scale(0.82); }
+  100% { transform: translate3d(1.25rem, 3.05rem, 0) scale(1.15); }
 }
 
-@keyframes tgOpeningDotB {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-1.45rem, -1rem, 0); }
+@keyframes orbitDotB {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  48% { transform: translate3d(-2.55rem, -0.9rem, 0) scale(1.14); }
+  100% { transform: translate3d(-0.95rem, -3.05rem, 0) scale(0.86); }
 }
 
 @keyframes tgGlowNode {
@@ -534,16 +536,66 @@ footer,
 }
 
 .tg-mark {
-  width: 2.65rem;
-  height: 2.65rem;
-  border-radius: 10px;
-  background: #101828;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  letter-spacing: 0;
+  width: 3rem;
+  height: 3rem;
+  position: relative;
+  flex: 0 0 3rem;
+  overflow: hidden;
+  border: 1.5px solid rgba(94, 234, 212, 0.86);
+  border-radius: 13px;
+  color: transparent;
+  font-size: 0;
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.24), rgba(14, 165, 233, 0.12)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    rgba(2, 6, 23, 0.72);
+  background-size: auto, 0.8rem 0.8rem, 0.8rem 0.8rem, auto;
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.16) inset,
+    0 14px 30px rgba(14, 165, 233, 0.22),
+    0 0 30px rgba(94, 234, 212, 0.18);
+}
+
+.tg-mark::before,
+.tg-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+}
+
+.tg-mark::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  left: 0.45rem;
+  top: 0.48rem;
+  background: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.62);
+  animation: headerOrbitDotA 3.8s ease-in-out infinite alternate;
+}
+
+.tg-mark::after {
+  width: 0.38rem;
+  height: 0.38rem;
+  right: 0.44rem;
+  bottom: 0.48rem;
+  background: #5eead4;
+  box-shadow:
+    -1.46rem -0.62rem 0 #38bdf8,
+    0 0 18px rgba(94, 234, 212, 0.58);
+  animation: headerOrbitDotB 4.6s ease-in-out infinite alternate;
+}
+
+@keyframes headerOrbitDotA {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  42% { transform: translate3d(1.62rem, 0.46rem, 0) scale(0.82); }
+  100% { transform: translate3d(0.74rem, 1.78rem, 0) scale(1.15); }
+}
+
+@keyframes headerOrbitDotB {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  48% { transform: translate3d(-1.5rem, -0.52rem, 0) scale(1.14); }
+  100% { transform: translate3d(-0.56rem, -1.78rem, 0) scale(0.86); }
 }
 
 .tg-title {
@@ -773,6 +825,7 @@ hr {
 
 LANGUAGE_OPTIONS = ["ko", "en"]
 LANGUAGE_LABELS = {"ko": "한국어", "en": "English"}
+LANGUAGE_VALUE_ALIASES = {"한국어": "ko", "Korean": "ko", "English": "en", "영어": "en"}
 
 TRANSLATIONS = {
     "language": {"ko": "언어", "en": "Language"},
@@ -1110,6 +1163,15 @@ if "entered_platform" not in st.session_state:
     st.session_state.entered_platform = False
 
 
+def normalize_language_value(value: str | None) -> str:
+    normalized = LANGUAGE_VALUE_ALIASES.get(str(value), value)
+    return normalized if normalized in LANGUAGE_OPTIONS else "ko"
+
+
+st.session_state.ui_language = normalize_language_value(st.session_state.get("ui_language"))
+st.session_state.language_selector = normalize_language_value(st.session_state.get("language_selector"))
+
+
 WORKFLOW_OPTIONS = [
     "Document Analyzer",
     "Molecule Screening",
@@ -1130,14 +1192,31 @@ WORKFLOW_ICONS = {
 
 
 def current_language() -> str:
-    return st.session_state.get("language_selector", st.session_state.get("ui_language", "ko"))
+    return normalize_language_value(st.session_state.get("language_selector", st.session_state.get("ui_language", "ko")))
+
+
+def english_ui_text(value: str) -> str:
+    """Keep English UI chrome free of Korean labels while preserving source evidence elsewhere."""
+    if not isinstance(value, str) or not re.search(r"[가-힣]", value):
+        return value
+    translated = TRANSLATIONS.get(value)
+    if translated and translated.get("en"):
+        return translated["en"]
+    slash_parts = [part.strip() for part in re.split(r"\s*/\s*", value) if part.strip()]
+    english_parts = [part for part in slash_parts if not re.search(r"[가-힣]", part)]
+    if english_parts:
+        return english_parts[-1]
+    compact = re.sub(r"[가-힣]+", "", value)
+    compact = re.sub(r"\s{2,}", " ", compact).strip(" /:-")
+    return compact or "Review Item"
 
 
 def t(key: str) -> str:
     value = TRANSLATIONS.get(key)
     if not value:
-        return key
-    return value.get(current_language(), value.get("en", key))
+        return english_ui_text(key) if current_language() == "en" else key
+    translated = value.get(current_language(), value.get("en", key))
+    return english_ui_text(translated) if current_language() == "en" else translated
 
 
 COLUMN_LABEL_OVERRIDES = {
@@ -1248,7 +1327,7 @@ def _localize_display_text(value: str) -> str:
     english_parts = [part for part in parts if not re.search(r"[가-힣]", part)]
     if english_parts:
         return english_parts[-1]
-    return VALUE_LABEL_OVERRIDES.get(value, {}).get("en", value)
+    return VALUE_LABEL_OVERRIDES.get(value, {}).get("en", english_ui_text(value))
 
 
 def ui_dataframe(data) -> pd.DataFrame:
@@ -1269,6 +1348,10 @@ def workflow_label(value: str) -> str:
 
 
 def option_label(value: str) -> str:
+    if current_language() == "en":
+        override = VALUE_LABEL_OVERRIDES.get(str(value)) or COLUMN_LABEL_OVERRIDES.get(str(value)) or TRANSLATIONS.get(str(value))
+        if override:
+            return override.get("en", english_ui_text(str(value)))
     return t(value)
 
 
@@ -1367,15 +1450,16 @@ def render_sidebar_footer() -> None:
 
 
 def render_language_selector() -> None:
+    st.session_state.language_selector = normalize_language_value(st.session_state.get("language_selector"))
     selected_language = st.selectbox(
         t("language"),
         LANGUAGE_OPTIONS,
-        index=LANGUAGE_OPTIONS.index(current_language()),
         format_func=lambda value: LANGUAGE_LABELS[value],
         key="language_selector",
         label_visibility="collapsed",
     )
-    st.session_state.ui_language = selected_language
+    normalized_language = normalize_language_value(selected_language)
+    st.session_state.ui_language = normalized_language
 
 
 def render_header() -> None:
