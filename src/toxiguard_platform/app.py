@@ -103,25 +103,11 @@ st.markdown(
 
 #MainMenu,
 footer,
-[data-testid="stHeader"],
-[data-testid="stToolbar"],
-[data-testid="stDecoration"],
-[data-testid="stStatusWidget"],
 [data-testid="stDeployButton"],
-[data-testid="stMainMenu"],
-[aria-label="Main menu"],
 [aria-label="Deploy"],
-[title="Main menu"],
-[title="Deploy"],
-button[kind="header"] {
+[title="Deploy"] {
   display: none !important;
   visibility: hidden !important;
-  height: 0 !important;
-}
-
-header {
-  visibility: hidden !important;
-  height: 0 !important;
 }
 
 .tg-header {
