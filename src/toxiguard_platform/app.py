@@ -103,13 +103,16 @@ st.markdown(
 }
 
 .stApp {
-  background: #f5f7fb;
+  background:
+    radial-gradient(circle at 38% 8%, rgba(14, 165, 233, 0.08), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(94, 234, 212, 0.06), transparent 24%),
+    linear-gradient(135deg, #f8fbff 0%, #f4f8fc 52%, #ffffff 100%);
   color: var(--ink);
 }
 
 .block-container {
-  max-width: 1320px;
-  padding-top: 1.2rem !important;
+  max-width: 1180px;
+  padding-top: 1.65rem !important;
   padding-bottom: 3rem;
 }
 
@@ -126,14 +129,20 @@ header[data-testid="stHeader"],
 }
 
 [data-testid="stSidebar"] {
-  background: var(--sidebar);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 356px !important;
+  max-width: 356px !important;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(34, 211, 238, 0.20), transparent 22%),
+    radial-gradient(circle at 80% 88%, rgba(14, 165, 233, 0.12), transparent 28%),
+    linear-gradient(180deg, #04172b 0%, #061326 46%, #02101f 100%);
+  border-right: 1px solid rgba(34, 211, 238, 0.14);
+  box-shadow: 22px 0 55px rgba(15, 23, 42, 0.10);
 }
 
 [data-testid="stSidebarContent"],
 [data-testid="stSidebarUserContent"],
 [data-testid="stSidebar"] > div:first-child {
-  padding-top: 1rem !important;
+  padding: 1.45rem 0.95rem 1rem !important;
 }
 
 [data-testid="stSidebar"] * {
@@ -152,28 +161,40 @@ header[data-testid="stHeader"],
 
 [data-testid="stSidebar"] [data-testid="stButton"] button {
   width: 100%;
-  min-height: 2.85rem;
+  min-height: 4.25rem;
   justify-content: flex-start;
-  border-radius: 10px;
-  border: 1px solid rgba(238, 244, 255, 0.16);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 13px;
+  border: 1px solid rgba(148, 196, 226, 0.18);
+  background:
+    linear-gradient(135deg, rgba(18, 39, 68, 0.92), rgba(8, 27, 50, 0.88));
   color: #eef4ff !important;
-  font-weight: 680;
+  font-weight: 780;
   text-align: left;
-  padding: 0.55rem 0.75rem;
+  padding: 0.75rem 1.05rem;
+  font-size: 0.96rem;
+  letter-spacing: 0;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stButton"] button:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(34, 211, 238, 0.46);
+  background:
+    linear-gradient(135deg, rgba(15, 66, 94, 0.92), rgba(8, 32, 58, 0.92));
+  transform: translateY(-1px);
 }
 
 [data-testid="stSidebar"] [data-testid="stButton"] button[kind="primary"],
 [data-testid="stSidebar"] [data-testid="baseButton-primary"] {
-  border-color: rgba(230, 80, 79, 0.95) !important;
-  background: linear-gradient(135deg, #e6504f, #c43b39) !important;
+  border-color: rgba(34, 211, 238, 0.84) !important;
+  background:
+    linear-gradient(135deg, rgba(8, 89, 117, 0.96), rgba(7, 44, 78, 0.96)) !important;
   color: #ffffff !important;
-  box-shadow: 0 10px 24px rgba(230, 80, 79, 0.22);
+  box-shadow:
+    0 18px 32px rgba(14, 165, 233, 0.20),
+    inset 5px 0 0 rgba(34, 211, 238, 0.96);
 }
 
 [data-testid="stSidebar"] [data-baseweb="textarea"],
@@ -197,9 +218,9 @@ header[data-testid="stHeader"],
 }
 
 .sidebar-dev-card {
-  border-top: 1px solid rgba(238, 244, 255, 0.12);
-  margin-top: 1.4rem;
-  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 196, 226, 0.22);
+  margin-top: 1.5rem;
+  padding-top: 1.05rem;
 }
 
 .sidebar-dev-card strong {
@@ -634,32 +655,37 @@ footer,
 }
 
 .tg-header {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 1.2rem 1.35rem;
-  margin-bottom: 0.95rem;
-  box-shadow: 0 12px 28px rgba(16, 24, 40, 0.05);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(34, 211, 238, 0.07), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1px solid #d9e3ef;
+  border-radius: 22px;
+  padding: 1.75rem 2rem;
+  margin: 0.45rem auto 1.15rem;
+  max-width: 780px;
+  box-shadow:
+    0 22px 55px rgba(16, 24, 40, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .topbar-language-spacer {
-  height: 0.2rem;
+  height: 0.55rem;
 }
 
 .tg-brand-row {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1.15rem;
 }
 
 .tg-mark {
-  width: 3rem;
-  height: 3rem;
+  width: 4.35rem;
+  height: 4.35rem;
   position: relative;
-  flex: 0 0 3rem;
+  flex: 0 0 4.35rem;
   overflow: hidden;
   border: 1.5px solid rgba(94, 234, 212, 0.86);
-  border-radius: 13px;
+  border-radius: 18px;
   color: transparent;
   font-size: 0;
   background:
@@ -716,29 +742,48 @@ footer,
 }
 
 .tg-title {
-  font-size: 1.55rem;
-  font-weight: 760;
+  font-size: clamp(1.55rem, 2.4vw, 2.2rem);
+  font-weight: 850;
   letter-spacing: 0;
   margin: 0;
   line-height: 1.2;
 }
 
 .tg-subtitle {
-  color: var(--muted);
-  font-size: 0.95rem;
+  color: #344054;
+  font-size: 0.98rem;
   margin-top: 0.25rem;
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
 .tg-header-mission {
-  margin-top: 0.85rem;
-  padding: 0.72rem 0.82rem;
-  border: 1px solid #dbe7ff;
-  border-left: 4px solid var(--blue);
-  border-radius: 10px;
-  background: linear-gradient(90deg, #f0f7ff, #fbfcfe);
+  margin-top: 1.3rem;
+  padding: 1rem 1.05rem 1rem 5rem;
+  min-height: 4.8rem;
+  position: relative;
+  border: 1px solid rgba(14, 165, 233, 0.24);
+  border-radius: 15px;
+  background: linear-gradient(90deg, #f4fbff, #ffffff);
   color: #344054;
   line-height: 1.42;
+}
+
+.tg-header-mission::before {
+  content: "◎";
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.9rem;
+  height: 2.9rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(14, 165, 233, 0.26);
+  border-radius: 999px;
+  color: #0891b2;
+  font-size: 1.6rem;
+  font-weight: 850;
+  background: #ffffff;
 }
 
 .tg-header-mission strong {
@@ -755,7 +800,7 @@ footer,
 }
 
 .tg-meta {
-  margin-top: 0.9rem;
+  margin-top: 1.15rem;
   color: #475467;
   font-size: 0.82rem;
   font-weight: 650;
@@ -765,38 +810,47 @@ footer,
 }
 
 .tg-meta span {
-  background: #eef4ff;
-  border: 1px solid #dbe7ff;
+  background: #f7fbff;
+  border: 1px solid #dbeafe;
   border-radius: 999px;
-  padding: 0.28rem 0.55rem;
+  padding: 0.52rem 0.76rem;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.03);
 }
 
 .status-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin: 0.9rem 0 1.5rem;
+  gap: 1rem;
+  margin: 0.65rem 0 1.75rem;
 }
 
 .status-cell {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.95rem 1rem;
-  min-height: 5.25rem;
-  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.04);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d9e3ef;
+  border-radius: 17px;
+  padding: 1.05rem 1.05rem 1.1rem;
+  min-height: 9rem;
+  box-shadow: 0 18px 40px rgba(16, 24, 40, 0.07);
   position: relative;
   overflow: hidden;
 }
 
 .status-cell::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--blue);
+  display: none;
+}
+
+.status-icon {
+  width: 2.65rem;
+  height: 2.65rem;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1.35rem;
+  border-radius: 15px;
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  background: #f6fcff;
+  color: #0891b2;
+  font-size: 1.25rem;
+  font-weight: 900;
 }
 
 .status-label {
@@ -807,9 +861,9 @@ footer,
 }
 
 .status-value {
-  font-size: 1.05rem;
-  font-weight: 720;
-  margin-top: 0.25rem;
+  font-size: 1.03rem;
+  font-weight: 850;
+  margin-top: 0.35rem;
   line-height: 1.35;
 }
 
@@ -842,6 +896,84 @@ footer,
   line-height: 1.58;
 }
 
+.intake-card {
+  display: grid;
+  grid-template-columns: 3.7rem 1fr;
+  gap: 1rem;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d9e3ef;
+  border-radius: 17px;
+  padding: 1.05rem 1.1rem;
+  margin: 0.4rem 0 1rem;
+  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.055);
+}
+
+.intake-card-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(14, 165, 233, 0.22);
+  border-radius: 999px;
+  background: #f6fcff;
+  color: #0891b2;
+  font-size: 1.75rem;
+  font-weight: 850;
+}
+
+.intake-card strong {
+  display: block;
+  color: #111827;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.intake-card span {
+  color: #475467;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.signals-empty-card {
+  min-height: 13.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.15rem;
+  border: 1.5px dashed rgba(51, 145, 214, 0.54);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(14, 165, 233, 0.09), transparent 24%),
+    rgba(255, 255, 255, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.signals-empty-icon {
+  width: 4.7rem;
+  height: 4.7rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(11, 114, 217, 0.22);
+  border-radius: 999px;
+  background: #eaf4ff;
+  color: #0b72d9;
+  font-size: 2rem;
+  font-weight: 850;
+}
+
+.signals-empty-copy strong {
+  display: block;
+  color: #111827;
+  font-size: 0.98rem;
+  margin-bottom: 0.4rem;
+}
+
+.signals-empty-copy span {
+  color: #5f6c7b;
+  font-size: 0.86rem;
+}
+
 h1, h2, h3, h4 {
   color: var(--ink);
   letter-spacing: 0;
@@ -861,7 +993,11 @@ h1, h2, h3, h4 {
 [data-testid="stTextInput"] input,
 [data-testid="stTextArea"] textarea,
 [data-testid="stSelectbox"] [data-baseweb="select"] {
-  border-radius: 10px !important;
+  border-radius: 12px !important;
+  min-height: 3rem;
+  border-color: #d8e2ee !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(16, 24, 40, 0.025);
 }
 
 [data-testid="stTextInput"] input,
@@ -878,14 +1014,30 @@ h1, h2, h3, h4 {
 }
 
 [data-testid="stFileUploaderDropzone"] {
-  background: #ffffff !important;
-  border: 1px dashed #b8c3d4 !important;
-  border-radius: 12px !important;
+  min-height: 12rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background:
+    radial-gradient(circle at 22% 50%, rgba(14, 165, 233, 0.08), transparent 22%),
+    #fbfdff !important;
+  border: 1.5px dashed rgba(51, 145, 214, 0.54) !important;
+  border-radius: 18px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 [data-testid="stFileUploaderDropzone"]:hover {
-  border-color: var(--blue) !important;
-  background: #f8fbfd !important;
+  border-color: #0ea5e9 !important;
+  background: #f7fcff !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button {
+  border-radius: 10px !important;
+  background: #0b72d9 !important;
+  border-color: #0b72d9 !important;
+  color: #ffffff !important;
+  font-weight: 820 !important;
+  box-shadow: 0 12px 24px rgba(11, 114, 217, 0.24);
 }
 
 [data-testid="stMetric"] {
@@ -926,8 +1078,9 @@ h1, h2, h3, h4 {
 }
 
 .stButton button[kind="primary"] {
-  background: #e6504f !important;
-  border-color: #e6504f !important;
+  background: #0b72d9 !important;
+  border-color: #0b72d9 !important;
+  box-shadow: 0 12px 24px rgba(11, 114, 217, 0.18);
 }
 
 .stButton button[kind="secondary"] {
@@ -948,6 +1101,203 @@ button[data-baseweb="tab"][aria-selected="true"] {
 
 hr {
   border-color: var(--line) !important;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.55rem 0.35rem 2rem;
+  min-height: 6rem;
+}
+
+.sidebar-brand-mark {
+  width: 3.95rem;
+  height: 4.6rem;
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1.8px solid rgba(34, 211, 238, 0.88);
+  border-radius: 1.4rem 1.4rem 2rem 2rem;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(34, 211, 238, 0.24), transparent 28%),
+    linear-gradient(180deg, rgba(4, 47, 74, 0.92), rgba(2, 18, 35, 0.98));
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.18);
+}
+
+.sidebar-brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: 0.75rem 0.9rem 1.05rem;
+  background:
+    radial-gradient(circle, #22d3ee 0 2px, transparent 3px) 0 0 / 0.55rem 0.55rem;
+  opacity: 0.9;
+}
+
+.sidebar-brand-mark::after {
+  content: "";
+  position: absolute;
+  right: 0.88rem;
+  top: 1.35rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.8);
+}
+
+.sidebar-brand-title {
+  color: #f8fafc;
+  font-size: 1.62rem;
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.sidebar-brand-subtitle {
+  margin-top: 0.35rem;
+  color: #22d3ee;
+  font-size: 0.76rem;
+  letter-spacing: 0.52em;
+  font-weight: 780;
+}
+
+.sidebar-kicker {
+  color: rgba(203, 213, 225, 0.78) !important;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  margin: 0.15rem 0.35rem 0.9rem;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 0.82rem;
+}
+
+.sidebar-nav-item {
+  min-height: 4.75rem;
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.78rem 1rem;
+  border-radius: 13px;
+  border: 1px solid rgba(148, 196, 226, 0.18);
+  background:
+    linear-gradient(135deg, rgba(18, 39, 68, 0.92), rgba(8, 27, 50, 0.88));
+  color: #eef4ff !important;
+  text-decoration: none !important;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.sidebar-nav-item:hover {
+  border-color: rgba(34, 211, 238, 0.48);
+  background:
+    linear-gradient(135deg, rgba(15, 66, 94, 0.94), rgba(8, 32, 58, 0.92));
+  transform: translateY(-1px);
+}
+
+.sidebar-nav-item.is-active {
+  border-color: rgba(34, 211, 238, 0.78);
+  background:
+    radial-gradient(circle at 0% 50%, rgba(34, 211, 238, 0.28), transparent 34%),
+    linear-gradient(135deg, rgba(8, 89, 117, 0.98), rgba(7, 44, 78, 0.96));
+  box-shadow:
+    0 18px 32px rgba(14, 165, 233, 0.20),
+    inset 5px 0 0 rgba(34, 211, 238, 0.96);
+}
+
+.sidebar-icon {
+  width: 2.52rem;
+  height: 2.52rem;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: 1px solid rgba(191, 219, 254, 0.26);
+  background: rgba(15, 23, 42, 0.18);
+  color: #dbeafe !important;
+}
+
+.sidebar-nav-item.is-active .sidebar-icon {
+  color: #ffffff !important;
+  border-color: rgba(165, 243, 252, 0.46);
+  background: rgba(2, 132, 199, 0.22);
+}
+
+.sidebar-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  stroke: currentColor;
+  stroke-width: 1.85;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sidebar-nav-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.48rem;
+  min-width: 0;
+}
+
+.sidebar-nav-text strong {
+  color: #ffffff !important;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+
+.sidebar-nav-text span {
+  color: rgba(238, 244, 255, 0.92) !important;
+  font-size: 0.92rem;
+  font-weight: 720;
+  line-height: 1.2;
+}
+
+.sidebar-status-card {
+  border-top: 1px solid rgba(148, 196, 226, 0.22);
+  border-bottom: 1px solid rgba(148, 196, 226, 0.22);
+  margin: 1.45rem 0 1.15rem;
+  padding: 1.25rem 0;
+}
+
+.sidebar-status-card strong {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: rgba(203, 213, 225, 0.82);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sidebar-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.72rem 0;
+  color: #e5eefb;
+  font-weight: 650;
+}
+
+.sidebar-status-dot {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(148, 196, 226, 0.45);
+  border-radius: 999px;
+  color: #9fe8f5;
+  font-size: 0.72rem;
+}
+
+.stApp > div:first-child .block-container {
+  border-radius: 0;
 }
 
 @media (max-width: 820px) {
@@ -1364,7 +1714,7 @@ WORKFLOW_OPTIONS = [
     "Regulatory Report",
 ]
 
-WORKFLOW_ICONS = {
+WORKFLOW_CODES = {
     "Document Analyzer": "DOC",
     "Molecule Screening": "MOL",
     "ToxiGuard Tools": "TOOL",
@@ -1372,6 +1722,76 @@ WORKFLOW_ICONS = {
     "Regulatory Sources": "SRC",
     "Regulatory Report": "RPT",
 }
+
+WORKFLOW_SLUGS = {
+    "Document Analyzer": "document-analyzer",
+    "Molecule Screening": "molecule-screening",
+    "ToxiGuard Tools": "toxiguard-tools",
+    "FDA Review Worksheet": "fda-review-worksheet",
+    "Regulatory Sources": "regulatory-sources",
+    "Regulatory Report": "regulatory-report",
+}
+
+SLUG_WORKFLOWS = {slug: option for option, slug in WORKFLOW_SLUGS.items()}
+
+WORKFLOW_ICONS = {
+    "Document Analyzer": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M7 3.8h7.5L19 8.3v11.9H7z" />
+  <path d="M14.5 3.8v4.5H19" />
+  <path d="M10 12h6" />
+  <path d="M10 15.5h6" />
+</svg>
+""",
+    "Molecule Screening": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="7" cy="8" r="2.2" />
+  <circle cx="17" cy="7" r="2.2" />
+  <circle cx="16" cy="17" r="2.2" />
+  <circle cx="6" cy="16" r="1.8" />
+  <path d="M9 8h5.8" />
+  <path d="M15.9 9.1v5.7" />
+  <path d="M8 15.4l6-6" />
+</svg>
+""",
+    "ToxiGuard Tools": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M14.8 5.2l4 4" />
+  <path d="M13 7l4 4L8.2 19.8H4.2v-4z" />
+  <path d="M4.8 5.3l4.1 4.1" />
+  <path d="M6.9 3.2L3.2 6.9" />
+</svg>
+""",
+    "FDA Review Worksheet": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <rect x="6" y="4" width="12" height="16" rx="2" />
+  <path d="M9 8h6" />
+  <path d="M9 12h6" />
+  <path d="M9 16h4" />
+</svg>
+""",
+    "Regulatory Sources": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M5 5.5c2.8 0 4.5.6 7 2.2v12c-2.5-1.6-4.2-2.2-7-2.2z" />
+  <path d="M19 5.5c-2.8 0-4.5.6-7 2.2v12c2.5-1.6 4.2-2.2 7-2.2z" />
+</svg>
+""",
+    "Regulatory Report": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <rect x="5" y="5" width="14" height="14" rx="2.2" />
+  <path d="M9 15v-3" />
+  <path d="M12 15V9" />
+  <path d="M15 15v-5" />
+</svg>
+""",
+}
+
+if hasattr(st, "query_params"):
+    raw_query_view = st.query_params.get("view")
+    if isinstance(raw_query_view, (list, tuple)):
+        raw_query_view = raw_query_view[0] if raw_query_view else None
+    if raw_query_view in SLUG_WORKFLOWS:
+        st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
 
 
 def current_language() -> str:
@@ -1610,23 +2030,59 @@ def render_opening_screen() -> None:
         rerun_app()
 
 
+def render_sidebar_brand() -> None:
+    st.markdown(
+        """
+<div class="sidebar-brand">
+  <div class="sidebar-brand-mark" aria-hidden="true"></div>
+  <div>
+    <div class="sidebar-brand-title">ToxiGuard</div>
+    <div class="sidebar-brand-subtitle">PLATFORM</div>
+  </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
 def render_sidebar_menu() -> str:
     selected = st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
-    st.caption(t("view"))
+    if selected not in WORKFLOW_OPTIONS:
+        selected = WORKFLOW_OPTIONS[0]
+        st.session_state.workflow_selector = selected
+    language = current_language()
+    rows = [f'<div class="sidebar-kicker">{t("workspace")}</div>', '<nav class="sidebar-nav" aria-label="ToxiGuard workspace">']
     for option in WORKFLOW_OPTIONS:
         is_selected = option == selected
-        marker = "●" if is_selected else "○"
-        label = f"{marker} {WORKFLOW_ICONS[option]}  {workflow_label(option)}"
-        if st.button(
-            label,
-            key=f"sidebar_nav_{option.lower().replace(' ', '_')}",
-            type="primary" if is_selected else "secondary",
-            use_container_width=True,
-        ):
-            if not is_selected:
-                st.session_state.workflow_selector = option
-                rerun_app()
-    return st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
+        active = "is-active" if is_selected else ""
+        href = f"?lang={language}&view={WORKFLOW_SLUGS[option]}"
+        rows.append(
+            f"""
+<a class="sidebar-nav-item {active}" href="{href}" target="_self">
+  <span class="sidebar-icon">{WORKFLOW_ICONS[option]}</span>
+  <span class="sidebar-nav-text">
+    <strong>{WORKFLOW_CODES[option]}</strong>
+    <span>{workflow_label(option)}</span>
+  </span>
+</a>
+"""
+        )
+    rows.append("</nav>")
+    st.markdown("\n".join(rows), unsafe_allow_html=True)
+    return selected
+
+
+def render_sidebar_status() -> None:
+    st.markdown(
+        f"""
+<div class="sidebar-status-card">
+  <strong>{t("prototype_status")}</strong>
+  <div class="sidebar-status-row"><span class="sidebar-status-dot">✓</span><span>{t("decision_support_only")}</span></div>
+  <div class="sidebar-status-row"><span class="sidebar-status-dot">i</span><span>{t("expert_review_required")}</span></div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
 def render_sidebar_footer() -> None:
@@ -1663,6 +2119,10 @@ def render_language_selector() -> None:
     )
     normalized_language = normalize_language_value(selected_language)
     st.session_state.ui_language = normalized_language
+    if hasattr(st, "query_params"):
+        current_query_language = normalize_language_value(st.query_params.get("lang"))
+        if current_query_language != normalized_language:
+            st.query_params["lang"] = normalized_language
 
 
 def render_header() -> None:
@@ -1707,10 +2167,10 @@ def render_status_strip() -> None:
     st.markdown(
         f"""
 <div class="status-strip">
-  <div class="status-cell"><div class="status-label">{t("engine")}</div><div class="status-value">{rdkit_status}</div></div>
-  <div class="status-cell"><div class="status-label">{t("document_flow")}</div><div class="status-value">KOR/ENG OCR + CTD</div></div>
-  <div class="status-cell"><div class="status-label">{t("regulatory_frame")}</div><div class="status-value">FDA-style Worksheet</div></div>
-  <div class="status-cell"><div class="status-label">{t("output")}</div><div class="status-value">IR + Review Language</div></div>
+  <div class="status-cell"><div class="status-icon">↗</div><div class="status-label">{t("engine")}</div><div class="status-value">{rdkit_status}</div></div>
+  <div class="status-cell"><div class="status-icon">□</div><div class="status-label">{t("document_flow")}</div><div class="status-value">KOR/ENG OCR + CTD</div></div>
+  <div class="status-cell"><div class="status-icon">⚖</div><div class="status-label">{t("regulatory_frame")}</div><div class="status-value">FDA-style Worksheet</div></div>
+  <div class="status-cell"><div class="status-icon">◌</div><div class="status-label">{t("output")}</div><div class="status-value">IR + Review Language</div></div>
 </div>
 """,
         unsafe_allow_html=True,
@@ -2077,12 +2537,9 @@ render_topbar()
 render_status_strip()
 
 with st.sidebar:
-    st.subheader(t("workspace"))
+    render_sidebar_brand()
     workflow = render_sidebar_menu()
-    st.divider()
-    st.caption(t("prototype_status"))
-    st.write(t("decision_support_only"))
-    st.write(t("expert_review_required"))
+    render_sidebar_status()
     render_sidebar_footer()
 
 
@@ -2117,9 +2574,12 @@ if workflow == "Document Analyzer":
         st.subheader(t("CTD Document Intake"))
         st.markdown(
             f"""
-<div class="review-banner">
-  <strong>{t("Project Dossier")}</strong>
-  <span>{t("project_dossier_body")}</span>
+<div class="intake-card">
+  <div class="intake-card-icon">□</div>
+  <div>
+    <strong>{t("Project Dossier")}</strong>
+    <span>{t("project_dossier_body")}</span>
+  </div>
 </div>
 """,
             unsafe_allow_html=True,
@@ -2127,7 +2587,7 @@ if workflow == "Document Analyzer":
         project_name = st.text_input(t("Project Name"), value=st.session_state.project_name)
         uploaded_files = st.file_uploader(
             t("Upload CTD documents"),
-            type=["pdf", "png", "jpg", "jpeg"],
+            type=["pdf", "docx", "txt", "png", "jpg", "jpeg"],
             accept_multiple_files=True,
             key="project_uploads",
         )
@@ -2180,7 +2640,18 @@ if workflow == "Document Analyzer":
         st.subheader(t("Document Signals"))
         summary = st.session_state.document_summary
         if not summary:
-            st.info(t("upload_to_begin"))
+            st.markdown(
+                f"""
+<div class="signals-empty-card">
+  <div class="signals-empty-icon">⇧</div>
+  <div class="signals-empty-copy">
+    <strong>{t("upload_to_begin")}</strong>
+    <span>Supports .pdf, .docx, .txt</span>
+  </div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
         else:
             if summary.get("language"):
                 st.caption(f"{t('detected_language')}: {summary['language']}")

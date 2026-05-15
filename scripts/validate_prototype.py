@@ -848,10 +848,20 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
             return
     button_labels = [item.label for item in app.button]
     text_area_labels = [item.label for item in app.text_area]
+    markdown_values = [str(item.value) for item in app.markdown]
+    rendered_markup = "\n".join(markdown_values)
     v.require("프로젝트 분석" in button_labels, "streamlit_document_flow:analyze_button", str(button_labels))
     v.require("또는 CTD 문서 텍스트 붙여넣기" in text_area_labels, "streamlit_document_flow:text_area", str(text_area_labels))
-    v.require(any("문서 분석" in label for label in button_labels), "streamlit_sidebar:document_nav_button", str(button_labels[:8]))
-    v.require(any("분자 스크리닝" in label for label in button_labels), "streamlit_sidebar:molecule_nav_button", str(button_labels[:8]))
+    v.require(
+        "sidebar-nav-item" in rendered_markup and "document-analyzer" in rendered_markup,
+        "streamlit_sidebar:document_nav_link",
+        rendered_markup[:900],
+    )
+    v.require(
+        "sidebar-nav-item" in rendered_markup and "molecule-screening" in rendered_markup,
+        "streamlit_sidebar:molecule_nav_link",
+        rendered_markup[:900],
+    )
     v.require("코멘트" in text_area_labels, "streamlit_sidebar:comment_box", str(text_area_labels))
 
     ctd_text = (

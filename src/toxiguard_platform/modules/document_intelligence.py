@@ -5,8 +5,10 @@ from __future__ import annotations
 import io
 import re
 import sys
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
+from xml.etree import ElementTree
 
 from toxiguard_platform.modules.regulatory_ontology import (
     CATEGORY_META,
@@ -42,12 +44,23 @@ class DocumentResult:
 
 
 def extract_document_text(content: bytes, content_type: str | None) -> DocumentResult:
-    """Extract text from a PDF or image-like upload."""
+    """Extract text from a PDF, DOCX, TXT, or image-like upload."""
     content_type = content_type or ""
     warnings: list[str] = []
+    normalized_type = content_type.lower()
 
-    if "pdf" in content_type.lower():
+    if "pdf" in normalized_type:
         pages = _extract_pdf_pages(content, warnings)
+    elif "wordprocessingml" in normalized_type or "msword" in normalized_type:
+        text = _extract_docx_text(content, warnings)
+        pages = [{"page": 1, "text": text}]
+    elif normalized_type.startswith("text/") or normalized_type in {"", "application/octet-stream"}:
+        text = _extract_plain_text(content, warnings)
+        if text.strip():
+            pages = [{"page": 1, "text": text}]
+        else:
+            text = _extract_image(content, warnings)
+            pages = [{"page": 1, "text": text}]
     else:
         text = _extract_image(content, warnings)
         pages = [{"page": 1, "text": text}]
@@ -61,6 +74,55 @@ def extract_document_text(content: bytes, content_type: str | None) -> DocumentR
         warnings=warnings,
         pages=pages,
     )
+
+
+def _extract_plain_text(content: bytes, warnings: list[str]) -> str:
+    for encoding in ("utf-8-sig", "utf-16", "cp949", "euc-kr", "latin-1"):
+        try:
+            text = content.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if _looks_like_text(text):
+            return text
+    warnings.append("Plain-text decoding did not produce reviewable text.")
+    return ""
+
+
+def _looks_like_text(text: str) -> bool:
+    if not text.strip():
+        return False
+    sample = text[:4000]
+    printable = len(re.findall(r"[\w\s.,;:()/+\-%가-힣]", sample))
+    return printable / max(len(sample), 1) >= 0.72
+
+
+def _extract_docx_text(content: bytes, warnings: list[str]) -> str:
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            document_xml = archive.read("word/document.xml")
+    except KeyError:
+        warnings.append("DOCX document.xml was not found.")
+        return ""
+    except zipfile.BadZipFile:
+        warnings.append("DOCX extraction failed because the file is not a valid DOCX archive.")
+        return ""
+    except Exception as exc:
+        warnings.append(f"DOCX extraction failed: {exc}")
+        return ""
+
+    try:
+        root = ElementTree.fromstring(document_xml)
+    except ElementTree.ParseError as exc:
+        warnings.append(f"DOCX XML parsing failed: {exc}")
+        return ""
+
+    namespaces = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    paragraphs = []
+    for paragraph in root.findall(".//w:p", namespaces):
+        parts = [node.text for node in paragraph.findall(".//w:t", namespaces) if node.text]
+        if parts:
+            paragraphs.append("".join(parts))
+    return "\n".join(paragraphs)
 
 
 def _extract_pdf_pages(content: bytes, warnings: list[str]) -> list[dict]:
