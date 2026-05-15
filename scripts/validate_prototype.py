@@ -791,7 +791,7 @@ def check_streamlit_language_switch(v: Validator) -> None:
     v.require("Enter ToxiGuard-Platform" in opening_buttons, "streamlit_opening:enter_button", str(opening_buttons[:4]))
     opening_markdown = "\n".join(item.value for item in app.markdown)
     v.require(
-        'href="?lang=ko"' in opening_markdown and 'href="?lang=en"' in opening_markdown,
+        'href="?lang=ko&home=1"' in opening_markdown and 'href="?lang=en&home=1"' in opening_markdown,
         "streamlit_opening:language_links",
         opening_markdown[:500],
     )
@@ -825,9 +825,11 @@ def check_streamlit_language_switch(v: Validator) -> None:
         english_menu_text[:600],
     )
     source = (ROOT / "src" / "toxiguard_platform" / "app.py").read_text()
+    route_source_start = source.find('raw_home_request = st.query_params.get("home")')
+    route_source = source[route_source_start:] if route_source_start >= 0 else source
     query_view_block = re.search(
-        r"if raw_query_view in SLUG_WORKFLOWS:(?P<body>.*?)\n\n\ndef current_language",
-        source,
+        r"raw_home_request = st\.query_params\.get\(\"home\"\)(?P<body>.*?)\n\n\ndef current_language",
+        route_source,
         flags=re.S,
     )
     v.require(
@@ -841,9 +843,19 @@ def check_streamlit_language_switch(v: Validator) -> None:
         query_view_block.group("body")[:400] if query_view_block else "query view block not found",
     )
     v.require(
+        bool(query_view_block and "home_requested" in query_view_block.group("body")),
+        "streamlit_navigation:explicit_home_overrides_view",
+        query_view_block.group("body")[:500] if query_view_block else "query view block not found",
+    )
+    v.require(
         'st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]' in source,
         "streamlit_navigation:enter_button_sets_app_view",
         "Enter button should move from opening route to the internal app route.",
+    )
+    v.require(
+        "st.query_params.clear()" in source and "home=1" in source,
+        "streamlit_navigation:home_links_clear_internal_route",
+        "Opening links should have a route-level home state and Enter should clear it before entering the app.",
     )
 
 

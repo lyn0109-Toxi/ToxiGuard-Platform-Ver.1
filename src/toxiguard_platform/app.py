@@ -236,6 +236,39 @@ header[data-testid="stHeader"],
   line-height: 1.45;
 }
 
+.sidebar-home-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  width: 100%;
+  margin: 1.5rem 0 0;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid rgba(238, 244, 255, 0.26);
+  border-radius: 12px;
+  color: #eef4ff !important;
+  text-decoration: none !important;
+  background:
+    linear-gradient(135deg, rgba(22, 37, 60, 0.94), rgba(12, 28, 48, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-home-link:hover {
+  border-color: rgba(34, 211, 238, 0.58);
+  background:
+    linear-gradient(135deg, rgba(15, 66, 94, 0.95), rgba(8, 32, 58, 0.95));
+  transform: translateY(-1px);
+}
+
+.sidebar-home-link span:first-child {
+  font-weight: 800;
+}
+
+.sidebar-home-link span:last-child {
+  color: rgba(238, 244, 255, 0.78);
+  font-size: 1.15rem;
+}
+
 .stApp:has(.tg-opening-screen) {
   background: #0b1221;
 }
@@ -1789,10 +1822,16 @@ WORKFLOW_ICONS = {
 }
 
 if hasattr(st, "query_params"):
+    raw_home_request = st.query_params.get("home")
+    if isinstance(raw_home_request, (list, tuple)):
+        raw_home_request = raw_home_request[0] if raw_home_request else None
+    home_requested = str(raw_home_request).strip().lower() in {"1", "true", "yes", "home", "opening"}
     raw_query_view = st.query_params.get("view")
     if isinstance(raw_query_view, (list, tuple)):
         raw_query_view = raw_query_view[0] if raw_query_view else None
-    if raw_query_view in SLUG_WORKFLOWS:
+    if home_requested:
+        st.session_state.entered_platform = False
+    elif raw_query_view in SLUG_WORKFLOWS:
         st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
         st.session_state.entered_platform = True
     else:
@@ -1984,8 +2023,8 @@ def render_opening_screen() -> None:
 <div class="tg-opening-screen">
   <div class="tg-opening-content">
     <div class="tg-opening-language" aria-label="{t("language")}">
-      <a class="tg-opening-lang-option {ko_state}" href="?lang=ko">한국어</a>
-      <a class="tg-opening-lang-option {en_state}" href="?lang=en">English</a>
+      <a class="tg-opening-lang-option {ko_state}" href="?lang=ko&home=1">한국어</a>
+      <a class="tg-opening-lang-option {en_state}" href="?lang=en&home=1">English</a>
     </div>
     <div class="tg-opening-brand">
       <div class="tg-opening-mark" aria-hidden="true"></div>
@@ -2033,7 +2072,9 @@ def render_opening_screen() -> None:
     if st.button("Enter ToxiGuard-Platform", key="enter_platform", type="primary", use_container_width=True):
         st.session_state.entered_platform = True
         if hasattr(st, "query_params"):
-            st.query_params["lang"] = current_language()
+            language = current_language()
+            st.query_params.clear()
+            st.query_params["lang"] = language
             st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]
         rerun_app()
 
@@ -2094,13 +2135,16 @@ def render_sidebar_status() -> None:
 
 
 def render_sidebar_footer() -> None:
-    if st.button(t("opening_screen"), key="sidebar_opening_screen", use_container_width=True):
-        st.session_state.entered_platform = False
-        if hasattr(st, "query_params"):
-            language = current_language()
-            st.query_params.clear()
-            st.query_params["lang"] = language
-        rerun_app()
+    language = current_language()
+    st.markdown(
+        f"""
+<a class="sidebar-home-link" href="?lang={language}&home=1" target="_self">
+  <span>{t("opening_screen")}</span>
+  <span aria-hidden="true">›</span>
+</a>
+""",
+        unsafe_allow_html=True,
+    )
     st.markdown(
         f"""
 <div class="sidebar-dev-card">
