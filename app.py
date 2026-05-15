@@ -161,7 +161,7 @@ header[data-testid="stHeader"],
 
 [data-testid="stSidebar"] [data-testid="stButton"] button {
   width: 100%;
-  min-height: 4.65rem;
+  min-height: 4.25rem;
   justify-content: flex-start;
   border-radius: 13px;
   border: 1px solid rgba(148, 196, 226, 0.18);
@@ -1107,7 +1107,8 @@ hr {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  padding: 0.35rem 0.05rem 1.65rem;
+  padding: 0.55rem 0.35rem 2rem;
+  min-height: 6rem;
 }
 
 .sidebar-brand-mark {
@@ -1147,7 +1148,7 @@ hr {
 
 .sidebar-brand-title {
   color: #f8fafc;
-  font-size: 1.42rem;
+  font-size: 1.62rem;
   line-height: 1.08;
   font-weight: 900;
 }
@@ -1158,6 +1159,105 @@ hr {
   font-size: 0.76rem;
   letter-spacing: 0.52em;
   font-weight: 780;
+}
+
+.sidebar-kicker {
+  color: rgba(203, 213, 225, 0.78) !important;
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  margin: 0.15rem 0.35rem 0.9rem;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 0.82rem;
+}
+
+.sidebar-nav-item {
+  min-height: 4.75rem;
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.78rem 1rem;
+  border-radius: 13px;
+  border: 1px solid rgba(148, 196, 226, 0.18);
+  background:
+    linear-gradient(135deg, rgba(18, 39, 68, 0.92), rgba(8, 27, 50, 0.88));
+  color: #eef4ff !important;
+  text-decoration: none !important;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.sidebar-nav-item:hover {
+  border-color: rgba(34, 211, 238, 0.48);
+  background:
+    linear-gradient(135deg, rgba(15, 66, 94, 0.94), rgba(8, 32, 58, 0.92));
+  transform: translateY(-1px);
+}
+
+.sidebar-nav-item.is-active {
+  border-color: rgba(34, 211, 238, 0.78);
+  background:
+    radial-gradient(circle at 0% 50%, rgba(34, 211, 238, 0.28), transparent 34%),
+    linear-gradient(135deg, rgba(8, 89, 117, 0.98), rgba(7, 44, 78, 0.96));
+  box-shadow:
+    0 18px 32px rgba(14, 165, 233, 0.20),
+    inset 5px 0 0 rgba(34, 211, 238, 0.96);
+}
+
+.sidebar-icon {
+  width: 2.52rem;
+  height: 2.52rem;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: 1px solid rgba(191, 219, 254, 0.26);
+  background: rgba(15, 23, 42, 0.18);
+  color: #dbeafe !important;
+}
+
+.sidebar-nav-item.is-active .sidebar-icon {
+  color: #ffffff !important;
+  border-color: rgba(165, 243, 252, 0.46);
+  background: rgba(2, 132, 199, 0.22);
+}
+
+.sidebar-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  stroke: currentColor;
+  stroke-width: 1.85;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sidebar-nav-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.48rem;
+  min-width: 0;
+}
+
+.sidebar-nav-text strong {
+  color: #ffffff !important;
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  flex: 0 0 auto;
+}
+
+.sidebar-nav-text span {
+  color: rgba(238, 244, 255, 0.92) !important;
+  font-size: 0.92rem;
+  font-weight: 720;
+  line-height: 1.2;
 }
 
 .sidebar-status-card {
@@ -1601,8 +1701,10 @@ if hasattr(st, "query_params"):
     raw_query_language = st.query_params.get("lang")
     if raw_query_language is not None:
         query_language = normalize_language_value(raw_query_language)
-        st.session_state.ui_language = query_language
-        st.session_state.language_selector = query_language
+        if st.session_state.get("_last_query_language") != query_language:
+            st.session_state.ui_language = query_language
+            st.session_state.language_selector = query_language
+            st.session_state._last_query_language = query_language
 
 
 WORKFLOW_OPTIONS = [
@@ -1614,14 +1716,87 @@ WORKFLOW_OPTIONS = [
     "Regulatory Report",
 ]
 
-WORKFLOW_ICONS = {
-    "Document Analyzer": "▤ DOC",
-    "Molecule Screening": "⌬ MOL",
-    "ToxiGuard Tools": "⌘ TOOL",
-    "FDA Review Worksheet": "▣ FDA",
-    "Regulatory Sources": "□ SRC",
-    "Regulatory Report": "▥ RPT",
+WORKFLOW_CODES = {
+    "Document Analyzer": "DOC",
+    "Molecule Screening": "MOL",
+    "ToxiGuard Tools": "TOOL",
+    "FDA Review Worksheet": "FDA",
+    "Regulatory Sources": "SRC",
+    "Regulatory Report": "RPT",
 }
+
+WORKFLOW_SLUGS = {
+    "Document Analyzer": "document-analyzer",
+    "Molecule Screening": "molecule-screening",
+    "ToxiGuard Tools": "toxiguard-tools",
+    "FDA Review Worksheet": "fda-review-worksheet",
+    "Regulatory Sources": "regulatory-sources",
+    "Regulatory Report": "regulatory-report",
+}
+
+SLUG_WORKFLOWS = {slug: option for option, slug in WORKFLOW_SLUGS.items()}
+
+WORKFLOW_ICONS = {
+    "Document Analyzer": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M7 3.8h7.5L19 8.3v11.9H7z" />
+  <path d="M14.5 3.8v4.5H19" />
+  <path d="M10 12h6" />
+  <path d="M10 15.5h6" />
+</svg>
+""",
+    "Molecule Screening": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="7" cy="8" r="2.2" />
+  <circle cx="17" cy="7" r="2.2" />
+  <circle cx="16" cy="17" r="2.2" />
+  <circle cx="6" cy="16" r="1.8" />
+  <path d="M9 8h5.8" />
+  <path d="M15.9 9.1v5.7" />
+  <path d="M8 15.4l6-6" />
+</svg>
+""",
+    "ToxiGuard Tools": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M14.8 5.2l4 4" />
+  <path d="M13 7l4 4L8.2 19.8H4.2v-4z" />
+  <path d="M4.8 5.3l4.1 4.1" />
+  <path d="M6.9 3.2L3.2 6.9" />
+</svg>
+""",
+    "FDA Review Worksheet": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <rect x="6" y="4" width="12" height="16" rx="2" />
+  <path d="M9 8h6" />
+  <path d="M9 12h6" />
+  <path d="M9 16h4" />
+</svg>
+""",
+    "Regulatory Sources": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M5 5.5c2.8 0 4.5.6 7 2.2v12c-2.5-1.6-4.2-2.2-7-2.2z" />
+  <path d="M19 5.5c-2.8 0-4.5.6-7 2.2v12c2.5-1.6 4.2-2.2 7-2.2z" />
+</svg>
+""",
+    "Regulatory Report": """
+<svg viewBox="0 0 24 24" aria-hidden="true">
+  <rect x="5" y="5" width="14" height="14" rx="2.2" />
+  <path d="M9 15v-3" />
+  <path d="M12 15V9" />
+  <path d="M15 15v-5" />
+</svg>
+""",
+}
+
+if hasattr(st, "query_params"):
+    raw_query_view = st.query_params.get("view")
+    if isinstance(raw_query_view, (list, tuple)):
+        raw_query_view = raw_query_view[0] if raw_query_view else None
+    if raw_query_view in SLUG_WORKFLOWS:
+        st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
+        st.session_state.entered_platform = True
+    else:
+        st.session_state.entered_platform = False
 
 
 def current_language() -> str:
@@ -1857,6 +2032,9 @@ def render_opening_screen() -> None:
     )
     if st.button("Enter ToxiGuard-Platform", key="enter_platform", type="primary", use_container_width=True):
         st.session_state.entered_platform = True
+        if hasattr(st, "query_params"):
+            st.query_params["lang"] = current_language()
+            st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]
         rerun_app()
 
 
@@ -1877,20 +2055,29 @@ def render_sidebar_brand() -> None:
 
 def render_sidebar_menu() -> str:
     selected = st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
-    st.caption(t("workspace").upper())
+    if selected not in WORKFLOW_OPTIONS:
+        selected = WORKFLOW_OPTIONS[0]
+        st.session_state.workflow_selector = selected
+    language = current_language()
+    rows = [f'<div class="sidebar-kicker">{t("workspace")}</div>', '<nav class="sidebar-nav" aria-label="ToxiGuard workspace">']
     for option in WORKFLOW_OPTIONS:
         is_selected = option == selected
-        label = f"{WORKFLOW_ICONS[option]}  {workflow_label(option)}"
-        if st.button(
-            label,
-            key=f"sidebar_nav_{option.lower().replace(' ', '_')}",
-            type="primary" if is_selected else "secondary",
-            use_container_width=True,
-        ):
-            if not is_selected:
-                st.session_state.workflow_selector = option
-                rerun_app()
-    return st.session_state.get("workflow_selector", WORKFLOW_OPTIONS[0])
+        active = "is-active" if is_selected else ""
+        href = f"?lang={language}&view={WORKFLOW_SLUGS[option]}"
+        rows.append(
+            f"""
+<a class="sidebar-nav-item {active}" href="{href}" target="_self">
+  <span class="sidebar-icon">{WORKFLOW_ICONS[option]}</span>
+  <span class="sidebar-nav-text">
+    <strong>{WORKFLOW_CODES[option]}</strong>
+    <span>{workflow_label(option)}</span>
+  </span>
+</a>
+"""
+        )
+    rows.append("</nav>")
+    st.markdown("\n".join(rows), unsafe_allow_html=True)
+    return selected
 
 
 def render_sidebar_status() -> None:
@@ -1909,6 +2096,10 @@ def render_sidebar_status() -> None:
 def render_sidebar_footer() -> None:
     if st.button(t("opening_screen"), key="sidebar_opening_screen", use_container_width=True):
         st.session_state.entered_platform = False
+        if hasattr(st, "query_params"):
+            language = current_language()
+            st.query_params.clear()
+            st.query_params["lang"] = language
         rerun_app()
     st.markdown(
         f"""
@@ -1940,6 +2131,11 @@ def render_language_selector() -> None:
     )
     normalized_language = normalize_language_value(selected_language)
     st.session_state.ui_language = normalized_language
+    if hasattr(st, "query_params"):
+        current_query_language = normalize_language_value(st.query_params.get("lang"))
+        if current_query_language != normalized_language:
+            st.query_params["lang"] = normalized_language
+        st.session_state._last_query_language = normalized_language
 
 
 def render_header() -> None:
@@ -2404,7 +2600,7 @@ if workflow == "Document Analyzer":
         project_name = st.text_input(t("Project Name"), value=st.session_state.project_name)
         uploaded_files = st.file_uploader(
             t("Upload CTD documents"),
-            type=["pdf", "png", "jpg", "jpeg"],
+            type=["pdf", "docx", "txt", "png", "jpg", "jpeg"],
             accept_multiple_files=True,
             key="project_uploads",
         )
@@ -2463,7 +2659,7 @@ if workflow == "Document Analyzer":
   <div class="signals-empty-icon">⇧</div>
   <div class="signals-empty-copy">
     <strong>{t("upload_to_begin")}</strong>
-    <span>Supports .pdf, .png, .jpg, .jpeg</span>
+    <span>Supports .pdf, .docx, .txt</span>
   </div>
 </div>
 """,
