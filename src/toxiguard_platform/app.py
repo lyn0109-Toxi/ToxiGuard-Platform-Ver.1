@@ -2099,25 +2099,24 @@ def render_sidebar_menu() -> str:
     if selected not in WORKFLOW_OPTIONS:
         selected = WORKFLOW_OPTIONS[0]
         st.session_state.workflow_selector = selected
-    language = current_language()
-    rows = [f'<div class="sidebar-kicker">{t("workspace")}</div>', '<nav class="sidebar-nav" aria-label="ToxiGuard workspace">']
+    st.markdown(f'<div class="sidebar-kicker">{t("workspace")}</div>', unsafe_allow_html=True)
     for option in WORKFLOW_OPTIONS:
         is_selected = option == selected
-        active = "is-active" if is_selected else ""
-        href = f"?lang={language}&view={WORKFLOW_SLUGS[option]}"
-        rows.append(
-            f"""
-<a class="sidebar-nav-item {active}" href="{href}" target="_self">
-  <span class="sidebar-icon">{WORKFLOW_ICONS[option]}</span>
-  <span class="sidebar-nav-text">
-    <strong>{WORKFLOW_CODES[option]}</strong>
-    <span>{workflow_label(option)}</span>
-  </span>
-</a>
-"""
+        clicked = st.button(
+            f"{WORKFLOW_CODES[option]}  {workflow_label(option)}",
+            key=f"sidebar_nav_{WORKFLOW_SLUGS[option]}",
+            type="primary" if is_selected else "secondary",
+            use_container_width=True,
         )
-    rows.append("</nav>")
-    st.markdown("\n".join(rows), unsafe_allow_html=True)
+        if clicked:
+            selected = option
+            st.session_state.workflow_selector = option
+            st.session_state.entered_platform = True
+            if hasattr(st, "query_params"):
+                language = current_language()
+                st.query_params.clear()
+                st.query_params["lang"] = language
+                st.query_params["view"] = WORKFLOW_SLUGS[option]
     return selected
 
 
@@ -2374,10 +2373,42 @@ def document_summary_has_evidence(summary: dict) -> bool:
         return False
     if summary.get("product_context", {}).get("basic_info"):
         return True
-    if any(summary.get(key) for key in ("specifications", "test_methods", "bioequivalence", "stability", "candidate_compounds")):
+    evidence_keys = (
+        "specifications",
+        "test_methods",
+        "bioequivalence",
+        "stability",
+        "candidate_compounds",
+        "evidence_blocks",
+        "specification_table",
+        "writing_structure",
+        "regulatory_source_crosswalk",
+        "regulatory_source_matches",
+    )
+    if any(summary.get(key) for key in evidence_keys):
         return True
     signal_details = summary.get("signal_details") or {}
     return any(signal_details.get(key) for key in signal_details)
+
+
+def recover_document_summary_for_report() -> dict:
+    """Use the latest project text if a report rerun sees a missing summary."""
+    summary = st.session_state.get("document_summary") or {}
+    if document_summary_has_evidence(summary):
+        return summary
+    text = st.session_state.get("document_text") or (st.session_state.get("project_dossier") or {}).get("combined_text", "")
+    if not text.strip():
+        return summary
+    recovered = analyze_ctd_text(text)
+    st.session_state.document_summary = recovered
+    st.session_state.product_context = recovered.get("product_context", {})
+    sync_application_profile_from_context(st.session_state.product_context)
+    if not st.session_state.get("assessments"):
+        detected = []
+        for compound in recovered.get("candidate_compounds", []):
+            detected.append(assess_smiles(compound["smiles"]))
+        st.session_state.assessments = detected
+    return recovered
 
 
 def upload_signature(uploaded_files: list | None) -> str:
@@ -3444,7 +3475,7 @@ elif workflow == "Regulatory Sources":
 
 elif workflow == "Regulatory Report":
     st.subheader(t("Regulatory Report Builder"))
-    document_summary = st.session_state.document_summary or {}
+    document_summary = recover_document_summary_for_report()
     assessments = st.session_state.assessments
     has_report_evidence = document_summary_has_evidence(document_summary)
     if not has_report_evidence:
@@ -3506,12 +3537,13 @@ elif workflow == "Regulatory Report":
 
     pdf_bytes = create_pdf_report(report_payload, language=current_language())
     encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+    can_download_report = has_report_evidence or bool(assessments) or bool(st.session_state.get("document_text"))
     st.download_button(
         t("Download PDF Report"),
         data=pdf_bytes,
         file_name="ToxiGuard_Prototype_1_Report.pdf",
         mime="application/pdf",
         type="primary",
-        disabled=not has_report_evidence and not assessments,
+        disabled=not can_download_report,
     )
     st.caption(f"{t('pdf_payload')} ({len(encoded)} base64 characters).")

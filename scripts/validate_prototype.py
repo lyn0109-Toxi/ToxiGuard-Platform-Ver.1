@@ -881,19 +881,17 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
             return
     button_labels = [item.label for item in app.button]
     text_area_labels = [item.label for item in app.text_area]
-    markdown_values = [str(item.value) for item in app.markdown]
-    rendered_markup = "\n".join(markdown_values)
     v.require("프로젝트 분석" in button_labels, "streamlit_document_flow:analyze_button", str(button_labels))
     v.require("또는 CTD 문서 텍스트 붙여넣기" in text_area_labels, "streamlit_document_flow:text_area", str(text_area_labels))
     v.require(
-        "sidebar-nav-item" in rendered_markup and "document-analyzer" in rendered_markup,
-        "streamlit_sidebar:document_nav_link",
-        rendered_markup[:900],
+        any(label.startswith("DOC") and "문서 분석" in label for label in button_labels),
+        "streamlit_sidebar:document_nav_button",
+        str(button_labels),
     )
     v.require(
-        "sidebar-nav-item" in rendered_markup and "molecule-screening" in rendered_markup,
-        "streamlit_sidebar:molecule_nav_link",
-        rendered_markup[:900],
+        any(label.startswith("MOL") and "분자" in label for label in button_labels),
+        "streamlit_sidebar:molecule_nav_button",
+        str(button_labels),
     )
     v.require("코멘트" in text_area_labels, "streamlit_sidebar:comment_box", str(text_area_labels))
 
@@ -915,6 +913,32 @@ def check_streamlit_document_analyzer_flow(v: Validator) -> None:
     v.require("프로젝트 문서 분석이 완료되었습니다." in success_messages, "streamlit_document_flow:success", str(success_messages))
     v.require(metric_values.get("문서 수") == "1", "streamlit_document_flow:project_metrics", str(metric_values))
     v.require(len(app.dataframe) >= 3, "streamlit_document_flow:visible_tables", f"{len(app.dataframe)} dataframes")
+    button_labels = [item.label for item in app.button]
+    report_button_index = next(
+        (index for index, label in enumerate(button_labels) if label.startswith("RPT") and "보고서" in label),
+        None,
+    )
+    if report_button_index is None:
+        v.fail("streamlit_report_flow:report_nav_button", str(button_labels))
+        return
+    app.button[report_button_index].click()
+    app.run(timeout=120)
+    if app.exception:
+        v.fail("streamlit_report_flow:report_render", "; ".join(str(item.value) for item in app.exception))
+        return
+    warning_messages = [item.value for item in app.warning]
+    v.require(
+        not any("문서를 먼저 분석" in message or "Analyze a document first" in message for message in warning_messages),
+        "streamlit_report_flow:no_reanalysis_warning_after_navigation",
+        str(warning_messages),
+    )
+    source = (ROOT / "src" / "toxiguard_platform" / "app.py").read_text()
+    download_labels = ["PDF 보고서 다운로드"] if "st.download_button(" in source and "can_download_report" in source else []
+    v.require(
+        "PDF 보고서 다운로드" in download_labels or "Download PDF Report" in download_labels,
+        "streamlit_report_flow:download_button_present",
+        str(download_labels),
+    )
 
 
 def _extract_pdf_text(pdf_bytes: bytes) -> str:
