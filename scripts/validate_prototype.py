@@ -835,6 +835,16 @@ def check_streamlit_language_switch(v: Validator) -> None:
         "streamlit_navigation:view_query_skips_opening",
         query_view_block.group("body")[:300] if query_view_block else "query view block not found",
     )
+    v.require(
+        bool(query_view_block and "entered_platform = False" in query_view_block.group("body")),
+        "streamlit_navigation:base_url_shows_opening",
+        query_view_block.group("body")[:400] if query_view_block else "query view block not found",
+    )
+    v.require(
+        'st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]' in source,
+        "streamlit_navigation:enter_button_sets_app_view",
+        "Enter button should move from opening route to the internal app route.",
+    )
 
 
 def check_streamlit_document_analyzer_flow(v: Validator) -> None:

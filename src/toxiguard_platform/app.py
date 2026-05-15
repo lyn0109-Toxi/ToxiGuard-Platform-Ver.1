@@ -1701,8 +1701,10 @@ if hasattr(st, "query_params"):
     raw_query_language = st.query_params.get("lang")
     if raw_query_language is not None:
         query_language = normalize_language_value(raw_query_language)
-        st.session_state.ui_language = query_language
-        st.session_state.language_selector = query_language
+        if st.session_state.get("_last_query_language") != query_language:
+            st.session_state.ui_language = query_language
+            st.session_state.language_selector = query_language
+            st.session_state._last_query_language = query_language
 
 
 WORKFLOW_OPTIONS = [
@@ -1793,6 +1795,8 @@ if hasattr(st, "query_params"):
     if raw_query_view in SLUG_WORKFLOWS:
         st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
         st.session_state.entered_platform = True
+    else:
+        st.session_state.entered_platform = False
 
 
 def current_language() -> str:
@@ -2028,6 +2032,9 @@ def render_opening_screen() -> None:
     )
     if st.button("Enter ToxiGuard-Platform", key="enter_platform", type="primary", use_container_width=True):
         st.session_state.entered_platform = True
+        if hasattr(st, "query_params"):
+            st.query_params["lang"] = current_language()
+            st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]
         rerun_app()
 
 
@@ -2089,6 +2096,10 @@ def render_sidebar_status() -> None:
 def render_sidebar_footer() -> None:
     if st.button(t("opening_screen"), key="sidebar_opening_screen", use_container_width=True):
         st.session_state.entered_platform = False
+        if hasattr(st, "query_params"):
+            language = current_language()
+            st.query_params.clear()
+            st.query_params["lang"] = language
         rerun_app()
     st.markdown(
         f"""
@@ -2124,6 +2135,7 @@ def render_language_selector() -> None:
         current_query_language = normalize_language_value(st.query_params.get("lang"))
         if current_query_language != normalized_language:
             st.query_params["lang"] = normalized_language
+        st.session_state._last_query_language = normalized_language
 
 
 def render_header() -> None:
