@@ -1792,6 +1792,7 @@ if hasattr(st, "query_params"):
         raw_query_view = raw_query_view[0] if raw_query_view else None
     if raw_query_view in SLUG_WORKFLOWS:
         st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
+        st.session_state.entered_platform = True
 
 
 def current_language() -> str:

@@ -824,6 +824,17 @@ def check_streamlit_language_switch(v: Validator) -> None:
         "streamlit_language_switch:english_ui_no_hangul",
         english_menu_text[:600],
     )
+    source = (ROOT / "src" / "toxiguard_platform" / "app.py").read_text()
+    query_view_block = re.search(
+        r"if raw_query_view in SLUG_WORKFLOWS:(?P<body>.*?)\n\n\ndef current_language",
+        source,
+        flags=re.S,
+    )
+    v.require(
+        bool(query_view_block and "entered_platform = True" in query_view_block.group("body")),
+        "streamlit_navigation:view_query_skips_opening",
+        query_view_block.group("body")[:300] if query_view_block else "query view block not found",
+    )
 
 
 def check_streamlit_document_analyzer_flow(v: Validator) -> None:
