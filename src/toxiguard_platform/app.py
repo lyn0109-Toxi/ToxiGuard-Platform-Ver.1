@@ -179,6 +179,29 @@ header[data-testid="stHeader"],
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+[data-testid="stSidebar"] [data-testid="stButton"] button p {
+  display: flex;
+  align-items: center;
+  gap: 0.58rem;
+  margin: 0;
+  white-space: normal;
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button img {
+  width: 1.28rem;
+  height: 1.28rem;
+  max-height: 1.28rem;
+  padding: 0.28rem;
+  border: 1px solid rgba(125, 211, 252, 0.34);
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(94, 234, 212, 0.26), transparent 42%),
+    rgba(8, 47, 73, 0.38);
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 [data-testid="stSidebar"] [data-testid="stButton"] button:hover {
   border-color: rgba(34, 211, 238, 0.46);
   background:
@@ -1821,6 +1844,37 @@ WORKFLOW_ICONS = {
 """,
 }
 
+WORKFLOW_ICON_ACCENTS = {
+    "Document Analyzer": "#38bdf8",
+    "Molecule Screening": "#5eead4",
+    "ToxiGuard Tools": "#fbbf24",
+    "FDA Review Worksheet": "#a7f3d0",
+    "Regulatory Sources": "#93c5fd",
+    "Regulatory Report": "#c4b5fd",
+}
+
+
+def workflow_icon_data_uri(option: str) -> str:
+    svg = WORKFLOW_ICONS.get(option, "").strip()
+    if not svg:
+        return ""
+    accent = WORKFLOW_ICON_ACCENTS.get(option, "#22d3ee")
+    if "xmlns=" not in svg[:80]:
+        svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ', 1)
+    svg = svg.replace(
+        "<svg ",
+        (
+            f'<svg fill="none" stroke="{accent}" stroke-width="1.8" '
+            'stroke-linecap="round" stroke-linejoin="round" '
+        ),
+        1,
+    )
+    compact_svg = re.sub(r"\s+", " ", svg).strip()
+    return "data:image/svg+xml;base64," + base64.b64encode(compact_svg.encode("utf-8")).decode("ascii")
+
+
+WORKFLOW_ICON_URIS = {option: workflow_icon_data_uri(option) for option in WORKFLOW_OPTIONS}
+
 if hasattr(st, "query_params"):
     raw_home_request = st.query_params.get("home")
     if isinstance(raw_home_request, (list, tuple)):
@@ -1994,6 +2048,12 @@ def workflow_label(value: str) -> str:
     return t(value)
 
 
+def workflow_button_label(value: str) -> str:
+    icon_uri = WORKFLOW_ICON_URIS.get(value)
+    signature = f"  ![{WORKFLOW_CODES[value]} signature]({icon_uri})" if icon_uri else ""
+    return f"{WORKFLOW_CODES[value]}{signature}  {workflow_label(value)}"
+
+
 def option_label(value: str) -> str:
     if current_language() == "en":
         override = VALUE_LABEL_OVERRIDES.get(str(value)) or COLUMN_LABEL_OVERRIDES.get(str(value)) or TRANSLATIONS.get(str(value))
@@ -2103,7 +2163,7 @@ def render_sidebar_menu() -> str:
     for option in WORKFLOW_OPTIONS:
         is_selected = option == selected
         clicked = st.button(
-            f"{WORKFLOW_CODES[option]}  {workflow_label(option)}",
+            workflow_button_label(option),
             key=f"sidebar_nav_{WORKFLOW_SLUGS[option]}",
             type="primary" if is_selected else "secondary",
             use_container_width=True,
