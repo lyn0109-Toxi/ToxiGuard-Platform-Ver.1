@@ -179,6 +179,29 @@ header[data-testid="stHeader"],
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+[data-testid="stSidebar"] [data-testid="stButton"] button p {
+  display: flex;
+  align-items: center;
+  gap: 0.58rem;
+  margin: 0;
+  white-space: normal;
+}
+
+[data-testid="stSidebar"] [data-testid="stButton"] button img {
+  width: 1.28rem;
+  height: 1.28rem;
+  max-height: 1.28rem;
+  padding: 0.28rem;
+  border: 1px solid rgba(125, 211, 252, 0.34);
+  border-radius: 11px;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(94, 234, 212, 0.26), transparent 42%),
+    rgba(8, 47, 73, 0.38);
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 [data-testid="stSidebar"] [data-testid="stButton"] button:hover {
   border-color: rgba(34, 211, 238, 0.46);
   background:
@@ -234,6 +257,39 @@ header[data-testid="stHeader"],
   color: rgba(238, 244, 255, 0.72) !important;
   font-size: 0.78rem;
   line-height: 1.45;
+}
+
+.sidebar-home-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  width: 100%;
+  margin: 1.5rem 0 0;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid rgba(238, 244, 255, 0.26);
+  border-radius: 12px;
+  color: #eef4ff !important;
+  text-decoration: none !important;
+  background:
+    linear-gradient(135deg, rgba(22, 37, 60, 0.94), rgba(12, 28, 48, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-home-link:hover {
+  border-color: rgba(34, 211, 238, 0.58);
+  background:
+    linear-gradient(135deg, rgba(15, 66, 94, 0.95), rgba(8, 32, 58, 0.95));
+  transform: translateY(-1px);
+}
+
+.sidebar-home-link span:first-child {
+  font-weight: 800;
+}
+
+.sidebar-home-link span:last-child {
+  color: rgba(238, 244, 255, 0.78);
+  font-size: 1.15rem;
 }
 
 .stApp:has(.tg-opening-screen) {
@@ -1788,11 +1844,48 @@ WORKFLOW_ICONS = {
 """,
 }
 
+WORKFLOW_ICON_ACCENTS = {
+    "Document Analyzer": "#38bdf8",
+    "Molecule Screening": "#5eead4",
+    "ToxiGuard Tools": "#fbbf24",
+    "FDA Review Worksheet": "#a7f3d0",
+    "Regulatory Sources": "#93c5fd",
+    "Regulatory Report": "#c4b5fd",
+}
+
+
+def workflow_icon_data_uri(option: str) -> str:
+    svg = WORKFLOW_ICONS.get(option, "").strip()
+    if not svg:
+        return ""
+    accent = WORKFLOW_ICON_ACCENTS.get(option, "#22d3ee")
+    if "xmlns=" not in svg[:80]:
+        svg = svg.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ', 1)
+    svg = svg.replace(
+        "<svg ",
+        (
+            f'<svg fill="none" stroke="{accent}" stroke-width="1.8" '
+            'stroke-linecap="round" stroke-linejoin="round" '
+        ),
+        1,
+    )
+    compact_svg = re.sub(r"\s+", " ", svg).strip()
+    return "data:image/svg+xml;base64," + base64.b64encode(compact_svg.encode("utf-8")).decode("ascii")
+
+
+WORKFLOW_ICON_URIS = {option: workflow_icon_data_uri(option) for option in WORKFLOW_OPTIONS}
+
 if hasattr(st, "query_params"):
+    raw_home_request = st.query_params.get("home")
+    if isinstance(raw_home_request, (list, tuple)):
+        raw_home_request = raw_home_request[0] if raw_home_request else None
+    home_requested = str(raw_home_request).strip().lower() in {"1", "true", "yes", "home", "opening"}
     raw_query_view = st.query_params.get("view")
     if isinstance(raw_query_view, (list, tuple)):
         raw_query_view = raw_query_view[0] if raw_query_view else None
-    if raw_query_view in SLUG_WORKFLOWS:
+    if home_requested:
+        st.session_state.entered_platform = False
+    elif raw_query_view in SLUG_WORKFLOWS:
         st.session_state.workflow_selector = SLUG_WORKFLOWS[raw_query_view]
         st.session_state.entered_platform = True
     else:
@@ -1955,6 +2048,12 @@ def workflow_label(value: str) -> str:
     return t(value)
 
 
+def workflow_button_label(value: str) -> str:
+    icon_uri = WORKFLOW_ICON_URIS.get(value)
+    signature = f"  ![{WORKFLOW_CODES[value]} signature]({icon_uri})" if icon_uri else ""
+    return f"{WORKFLOW_CODES[value]}{signature}  {workflow_label(value)}"
+
+
 def option_label(value: str) -> str:
     if current_language() == "en":
         override = VALUE_LABEL_OVERRIDES.get(str(value)) or COLUMN_LABEL_OVERRIDES.get(str(value)) or TRANSLATIONS.get(str(value))
@@ -1984,8 +2083,8 @@ def render_opening_screen() -> None:
 <div class="tg-opening-screen">
   <div class="tg-opening-content">
     <div class="tg-opening-language" aria-label="{t("language")}">
-      <a class="tg-opening-lang-option {ko_state}" href="?lang=ko">한국어</a>
-      <a class="tg-opening-lang-option {en_state}" href="?lang=en">English</a>
+      <a class="tg-opening-lang-option {ko_state}" href="?lang=ko&home=1">한국어</a>
+      <a class="tg-opening-lang-option {en_state}" href="?lang=en&home=1">English</a>
     </div>
     <div class="tg-opening-brand">
       <div class="tg-opening-mark" aria-hidden="true"></div>
@@ -2033,7 +2132,9 @@ def render_opening_screen() -> None:
     if st.button("Enter ToxiGuard-Platform", key="enter_platform", type="primary", use_container_width=True):
         st.session_state.entered_platform = True
         if hasattr(st, "query_params"):
-            st.query_params["lang"] = current_language()
+            language = current_language()
+            st.query_params.clear()
+            st.query_params["lang"] = language
             st.query_params["view"] = WORKFLOW_SLUGS["Document Analyzer"]
         rerun_app()
 
@@ -2058,25 +2159,24 @@ def render_sidebar_menu() -> str:
     if selected not in WORKFLOW_OPTIONS:
         selected = WORKFLOW_OPTIONS[0]
         st.session_state.workflow_selector = selected
-    language = current_language()
-    rows = [f'<div class="sidebar-kicker">{t("workspace")}</div>', '<nav class="sidebar-nav" aria-label="ToxiGuard workspace">']
+    st.markdown(f'<div class="sidebar-kicker">{t("workspace")}</div>', unsafe_allow_html=True)
     for option in WORKFLOW_OPTIONS:
         is_selected = option == selected
-        active = "is-active" if is_selected else ""
-        href = f"?lang={language}&view={WORKFLOW_SLUGS[option]}"
-        rows.append(
-            f"""
-<a class="sidebar-nav-item {active}" href="{href}" target="_self">
-  <span class="sidebar-icon">{WORKFLOW_ICONS[option]}</span>
-  <span class="sidebar-nav-text">
-    <strong>{WORKFLOW_CODES[option]}</strong>
-    <span>{workflow_label(option)}</span>
-  </span>
-</a>
-"""
+        clicked = st.button(
+            workflow_button_label(option),
+            key=f"sidebar_nav_{WORKFLOW_SLUGS[option]}",
+            type="primary" if is_selected else "secondary",
+            use_container_width=True,
         )
-    rows.append("</nav>")
-    st.markdown("\n".join(rows), unsafe_allow_html=True)
+        if clicked:
+            selected = option
+            st.session_state.workflow_selector = option
+            st.session_state.entered_platform = True
+            if hasattr(st, "query_params"):
+                language = current_language()
+                st.query_params.clear()
+                st.query_params["lang"] = language
+                st.query_params["view"] = WORKFLOW_SLUGS[option]
     return selected
 
 
@@ -2094,13 +2194,16 @@ def render_sidebar_status() -> None:
 
 
 def render_sidebar_footer() -> None:
-    if st.button(t("opening_screen"), key="sidebar_opening_screen", use_container_width=True):
-        st.session_state.entered_platform = False
-        if hasattr(st, "query_params"):
-            language = current_language()
-            st.query_params.clear()
-            st.query_params["lang"] = language
-        rerun_app()
+    language = current_language()
+    st.markdown(
+        f"""
+<a class="sidebar-home-link" href="?lang={language}&home=1" target="_self">
+  <span>{t("opening_screen")}</span>
+  <span aria-hidden="true">›</span>
+</a>
+""",
+        unsafe_allow_html=True,
+    )
     st.markdown(
         f"""
 <div class="sidebar-dev-card">
@@ -2330,10 +2433,42 @@ def document_summary_has_evidence(summary: dict) -> bool:
         return False
     if summary.get("product_context", {}).get("basic_info"):
         return True
-    if any(summary.get(key) for key in ("specifications", "test_methods", "bioequivalence", "stability", "candidate_compounds")):
+    evidence_keys = (
+        "specifications",
+        "test_methods",
+        "bioequivalence",
+        "stability",
+        "candidate_compounds",
+        "evidence_blocks",
+        "specification_table",
+        "writing_structure",
+        "regulatory_source_crosswalk",
+        "regulatory_source_matches",
+    )
+    if any(summary.get(key) for key in evidence_keys):
         return True
     signal_details = summary.get("signal_details") or {}
     return any(signal_details.get(key) for key in signal_details)
+
+
+def recover_document_summary_for_report() -> dict:
+    """Use the latest project text if a report rerun sees a missing summary."""
+    summary = st.session_state.get("document_summary") or {}
+    if document_summary_has_evidence(summary):
+        return summary
+    text = st.session_state.get("document_text") or (st.session_state.get("project_dossier") or {}).get("combined_text", "")
+    if not text.strip():
+        return summary
+    recovered = analyze_ctd_text(text)
+    st.session_state.document_summary = recovered
+    st.session_state.product_context = recovered.get("product_context", {})
+    sync_application_profile_from_context(st.session_state.product_context)
+    if not st.session_state.get("assessments"):
+        detected = []
+        for compound in recovered.get("candidate_compounds", []):
+            detected.append(assess_smiles(compound["smiles"]))
+        st.session_state.assessments = detected
+    return recovered
 
 
 def upload_signature(uploaded_files: list | None) -> str:
@@ -3400,7 +3535,7 @@ elif workflow == "Regulatory Sources":
 
 elif workflow == "Regulatory Report":
     st.subheader(t("Regulatory Report Builder"))
-    document_summary = st.session_state.document_summary or {}
+    document_summary = recover_document_summary_for_report()
     assessments = st.session_state.assessments
     has_report_evidence = document_summary_has_evidence(document_summary)
     if not has_report_evidence:
@@ -3462,12 +3597,13 @@ elif workflow == "Regulatory Report":
 
     pdf_bytes = create_pdf_report(report_payload, language=current_language())
     encoded = base64.b64encode(pdf_bytes).decode("utf-8")
+    can_download_report = has_report_evidence or bool(assessments) or bool(st.session_state.get("document_text"))
     st.download_button(
         t("Download PDF Report"),
         data=pdf_bytes,
         file_name="ToxiGuard_Prototype_1_Report.pdf",
         mime="application/pdf",
         type="primary",
-        disabled=not has_report_evidence and not assessments,
+        disabled=not can_download_report,
     )
     st.caption(f"{t('pdf_payload')} ({len(encoded)} base64 characters).")
